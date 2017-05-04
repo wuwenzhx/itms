@@ -1,0 +1,1631 @@
+from base_models.models import *
+from restapi.serializers import *
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from django.http import Http404
+from utils import check_auth, get_project_object, get_datetime_obj
+
+
+class ProjectList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def get(self, request):
+        if request.user.is_active:
+            project_list = Project.objects.all()
+            serializer = ProjectSerializer(project_list, many=True)
+            content, auth_status = serializer.data, status.HTTP_200_OK
+        else:
+            content = {
+                'detail': unicode("The password is valid, but the account has been disabled!~"),
+            }
+            auth_status = status.HTTP_401_UNAUTHORIZED
+        return Response(content, status=auth_status)
+
+
+class RequirementTypeList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = Type.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def get(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        type_list = Type.objects.filter(project__name=project)
+        serializer = RequirementTypeSerializer(type_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = RequirementTypeSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        type_name = serializer.data['name']
+        if not self._check_name(type_name, project):
+            return Response({'detail': unicode("Found same name type, please check your type name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        new_type = Type.objects.create(name=type_name, project=get_project_object(project))
+        new_type.save()
+        new_serializer = RequirementTypeSerializer(new_type)
+
+        return Response(new_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class RequirementTypeDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = Type.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def _get_object(self, project, pk):
+        try:
+            type_obj = Type.objects.get(id=pk, project__name=project)
+        except Type.DoesNotExist:
+            raise Http404
+        return type_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        type_obj = self._get_object(project, pk)
+        serializer = RequirementTypeSerializer(type_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = RequirementTypeSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        type_name = serializer.data['name']
+        if not self._check_name(type_name, project):
+            return Response({'detail': unicode("Found same name type, please check your type name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        type_obj = self._get_object(project, pk)
+        type_obj.name = serializer.data['name']
+        type_obj.save()
+
+        new_serializer = RequirementTypeSerializer(type_obj)
+        return Response(new_serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def delete(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        type_obj = self._get_object(project, pk)
+        type_obj.requirement_set.clear()
+        type_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class RequirementList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = Requirement.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def get(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        req_list = Requirement.objects.filter(project__name=project)
+        serializer = RequirementSerializer(req_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = RequirementSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            req_name = serializer.data['name']
+            req_owner = serializer.data['owner']
+            req_type = serializer.data['type']
+            req_description = serializer.data['description']
+        except KeyError:
+            return Response({'detail': unicode("The lack of required parameters.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not self._check_name(req_name, project):
+            return Response({'detail': unicode("Found same name requirement, "
+                                               "please check your requirement name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        new_req = Requirement.objects.create(
+            name=req_name,
+            owner=req_owner,
+            type_id=req_type,
+            description=req_description,
+            project=get_project_object(project)
+        )
+
+        new_serializer = RequirementSerializer(new_req)
+        return Response(new_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class RequirementDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project, req_id):
+        req_list = Requirement.objects.filter(name=name, project__name=project)
+        if 0 == len(req_list):
+            return True
+        elif 1 == len(req_list) and str(req_list[0].id) == req_id:
+            return True
+        else:
+            return False
+
+    def _get_req(self, project, pk):
+        try:
+            req_obj = Requirement.objects.get(id=pk, project__name=project)
+        except Requirement.DoesNotExist:
+            raise Http404
+        return req_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        req_obj = self._get_req(project, pk)
+        serializer = RequirementSerializer(req_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = RequirementSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            req_name = serializer.data['name']
+            req_owner = serializer.data['owner']
+            req_type = serializer.data['type']
+            req_description = serializer.data['description']
+        except KeyError:
+            return Response({'detail': unicode("The lack of required parameters.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not self._check_name(req_name, project, pk):
+            return Response({'detail': unicode("Found same name requirement, "
+                                               "please check your requirement name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        req_obj = self._get_req(project, pk)
+        req_obj.name = req_name
+        req_obj.owner = req_owner
+        req_obj.type_id = req_type
+        req_obj.description = req_description
+        req_obj.save()
+
+        new_serializer = RequirementSerializer(req_obj)
+        return Response(new_serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def delete(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        req_obj = self._get_req(project, pk)
+        req_obj.feature_set.clear()
+        req_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class FeatureComponentList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = Component.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def get(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        componet_list = Component.objects.filter(project__name=project)
+        serializer = FeatureComponentSerializer(componet_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = FeatureComponentSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        componet_name = serializer.data['name']
+        if not self._check_name(componet_name, project):
+            return Response({'detail': unicode("Found same name componet, "
+                                               "please check your componet name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        new_component = Component.objects.create(
+            name=componet_name,
+            project=get_project_object(project)
+        )
+
+        new_serializer = FeatureComponentSerializer(new_component)
+        return Response(new_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class FeatureComponentDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project, id):
+        count = Component.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def _get_component(self, project, pk):
+        try:
+            req_obj = Component.objects.get(id=pk, project__name=project)
+        except Component.DoesNotExist:
+            raise Http404
+        return req_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        component_obj = self._get_component(project, pk)
+        serializer = FeatureComponentSerializer(component_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = FeatureComponentSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        component_name = serializer.data['name']
+        if not self._check_name(component_name, project, pk):
+            return Response({'detail': unicode("Found same name component, "
+                                               "please check your component name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        component_obj = self._get_component(project, pk)
+        component_obj.name = component_name
+        component_obj.save()
+
+        new_serializer = FeatureComponentSerializer(component_obj)
+        return Response(new_serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def delete(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        component_obj = self._get_component(project, pk)
+        component_obj.feature_set.clear()
+        component_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class FeatureList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = Feature.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def get(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        fea_list = Feature.objects.filter(project__name=project)
+        serializer = FeatureSerializer(fea_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = FeatureSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            fea_name = serializer.data['name']
+            fea_owner = serializer.data['owner']
+            fea_component = serializer.data['component']
+            fea_requirement = serializer.data['requirement']
+            fea_description = serializer.data['description']
+        except KeyError:
+            return Response({'detail': unicode("The lack of required parameters.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not self._check_name(fea_name, project):
+            return Response({'detail': unicode("Found same name feature, "
+                                               "please check your feature name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        new_fea = Feature.objects.create(
+            name=fea_name,
+            owner=fea_owner,
+            component_id=fea_component,
+            requirement_id=fea_requirement,
+            description=fea_description,
+            project=get_project_object(project)
+        )
+
+        new_serializer = FeatureSerializer(new_fea)
+        return Response(new_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class FeatureDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project, feature_id):
+        fea_list = Feature.objects.filter(name=name, project__name=project)
+        if 0 == len(fea_list):
+            return True
+        elif 1 == len(fea_list) and str(fea_list[0].id) == feature_id:
+            return True
+        else:
+            return False
+
+    def _get_fea(self, project, pk):
+        try:
+            fea_obj = Feature.objects.get(id=pk, project__name=project)
+        except Feature.DoesNotExist:
+            raise Http404
+        return fea_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        fea_obj = self._get_fea(project, pk)
+        serializer = FeatureSerializer(fea_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = FeatureSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            fea_name = serializer.data['name']
+            fea_owner = serializer.data['owner']
+            fea_component = serializer.data['component']
+            fea_requirement = serializer.data['requirement']
+            fea_description = serializer.data['description']
+        except KeyError:
+            return Response({'detail': unicode("The lack of required parameters.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not self._check_name(fea_name, project, pk):
+            return Response({'detail': unicode("Found same name feature, "
+                                               "please check your feature name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        fea_obj = self._get_fea(project, pk)
+        fea_obj.name = fea_name
+        fea_obj.owner = fea_owner
+        fea_obj.component_id = fea_component
+        fea_obj.requirement_id = fea_requirement
+        fea_obj.description = fea_description
+        fea_obj.save()
+
+        new_serializer = FeatureSerializer(fea_obj)
+        return Response(new_serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def delete(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        fea_obj = self._get_fea(project, pk)
+        fea_obj.testcase_set.clear()
+        fea_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TestplanCategoryList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = Category.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def get(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        category_list = Category.objects.filter(project__name=project)
+        serializer = TestPlanCategorySerializer(category_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestPlanCategorySerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        category_name = serializer.data['name']
+        if not self._check_name(category_name, project):
+            return Response({'detail': unicode("Found same name category, "
+                                               "please check your category name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        new_category = Category.objects.create(
+            name=category_name,
+            project=get_project_object(project)
+        )
+
+        new_serializer = TestPlanCategorySerializer(new_category)
+        return Response(new_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class TestplanCategoryDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project, id):
+        count = Category.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def _get_category(self, project, pk):
+        try:
+            category_obj = Category.objects.get(id=pk, project__name=project)
+        except Category.DoesNotExist:
+            raise Http404
+        return category_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        category_obj = self._get_category(project, pk)
+        serializer = TestPlanCategorySerializer(category_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestPlanCategorySerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        category_name = serializer.data['name']
+        if not self._check_name(category_name, project, pk):
+            return Response({'detail': unicode("Found same name category, "
+                                               "please check your category name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        category_obj = self._get_category(project, pk)
+        category_obj.name = category_name
+        category_obj.save()
+
+        new_serializer = TestPlanCategorySerializer(category_obj)
+        return Response(new_serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def delete(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        category_obj = self._get_category(project, pk)
+        category_obj.testplan_set.clear()
+        category_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TestplanList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = TestPlan.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def get(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        plan_list = TestPlan.objects.filter(project__name=project)
+        serializer = TestPlanSerializer(plan_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestPlanSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            plan_name = serializer.data['name']
+            plan_category = serializer.data['category']
+            plan_owner = serializer.data['owner']
+            plan_description = serializer.data['description']
+            start_time = serializer.data['start_time']
+            end_time = serializer.data['end_time']
+        except KeyError:
+            return Response({'detail': unicode("The lack of required parameters.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not self._check_name(plan_name, project):
+            return Response({'detail': unicode("Found same name testplan, "
+                                               "please check your testplan name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        new_plan = TestPlan.objects.create(
+            name=plan_name,
+            category_id=plan_category,
+            owner=plan_owner,
+            start_time=get_datetime_obj(start_time),
+            end_time=get_datetime_obj(end_time),
+            description=plan_description,
+            project=get_project_object(project)
+        )
+
+        new_serializer = TestPlanSerializer(new_plan)
+        return Response(new_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class TestplanDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project, plan_id):
+        plan_list = TestPlan.objects.filter(name=name, project__name=project)
+        if 0 == len(plan_list):
+            return True
+        elif 1 == len(plan_list) and str(plan_list[0].id) == plan_id:
+            return True
+        else:
+            return False
+
+    def _get_plan(self, project, pk):
+        try:
+            plan_obj = TestPlan.objects.get(id=pk, project__name=project)
+        except TestPlan.DoesNotExist:
+            raise Http404
+        return plan_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        plan_obj = self._get_plan(project, pk)
+        serializer = TestPlanSerializer(plan_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestPlanSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            plan_name = serializer.data['name']
+            plan_category = serializer.data['category']
+            plan_owner = serializer.data['owner']
+            plan_description = serializer.data['description']
+            start_time = serializer.data['start_time']
+            end_time = serializer.data['end_time']
+        except KeyError:
+            return Response({'detail': unicode("The lack of required parameters.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not self._check_name(plan_name, project, pk):
+            return Response({'detail': unicode("Found same name testplan, "
+                                               "please check your testplan name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        plan_obj = self._get_plan(project, pk)
+        plan_obj.name = plan_name
+        plan_obj.owner = plan_owner
+        plan_obj.category_id = plan_category
+        plan_obj.start_time = get_datetime_obj(start_time)
+        plan_obj.end_time = get_datetime_obj(end_time)
+        plan_obj.description = plan_description
+        plan_obj.save()
+
+        new_serializer = TestPlanSerializer(plan_obj)
+        return Response(new_serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def delete(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        plan_obj = self._get_plan(project, pk)
+
+        count = TestExecution.objects.filter(testplan_id=pk, project__name=project).count()
+        if count:
+            return Response({'detail': unicode("This testplan has been used.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            plan_obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TestsuiteSubsystemList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = Subsystem.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def get(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        subsystem_list = Subsystem.objects.filter(project__name=project)
+        serializer = TestsuiteSubsystemSerializer(subsystem_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestsuiteSubsystemSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        subsystem_name = serializer.data['name']
+        if not self._check_name(subsystem_name, project):
+            return Response({'detail': unicode("Found same name subsystem, "
+                                               "please check your subsystem name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        new_subsystem = Subsystem.objects.create(
+            name=subsystem_name,
+            project=get_project_object(project)
+        )
+
+        new_serializer = TestsuiteSubsystemSerializer(new_subsystem)
+        return Response(new_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class TestsuiteSubsystemDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project, suite_id):
+        count = Subsystem.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def _get_subsystem(self, project, pk):
+        try:
+            subsystem_obj = Subsystem.objects.get(id=pk, project__name=project)
+        except Subsystem.DoesNotExist:
+            raise Http404
+        return subsystem_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        subsystem_obj = self._get_subsystem(project, pk)
+        serializer = TestsuiteSubsystemSerializer(subsystem_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestsuiteSubsystemSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        subsystem_name = serializer.data['name']
+        if not self._check_name(subsystem_name, project, pk):
+            return Response({'detail': unicode("Found same name subsystem, "
+                                               "please check your subsystem name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        subsystem_obj = self._get_subsystem(project, pk)
+        subsystem_obj.name = subsystem_name
+        subsystem_obj.save()
+
+        new_serializer = TestsuiteSubsystemSerializer(subsystem_obj)
+        return Response(new_serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def delete(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        subsystem_obj = self._get_subsystem(project, pk)
+        subsystem_obj.testsuite_set.clear()
+        subsystem_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TestsuiteList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = TestSuite.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def get(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        suite_list = TestSuite.objects.filter(project__name=project)
+        serializer = TestsuiteSerializer(suite_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestsuiteSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            suite_name = serializer.data['name']
+            suite_subsystem = serializer.data['subsystem']
+            suite_description = serializer.data['description']
+            plan_list = serializer.data['testplan']
+        except KeyError:
+            return Response({'detail': unicode("The lack of required parameters.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not self._check_name(suite_name, project):
+            return Response({'detail': unicode("Found same name testsuite, "
+                                               "please check your testsuite name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        new_suite = TestSuite.objects.create(
+            name=suite_name,
+            subsystem_id=suite_subsystem,
+            description=suite_description,
+            project=get_project_object(project)
+        )
+        for plan in plan_list:
+            new_suite.testplan.add(plan)
+
+        new_serializer = TestsuiteSerializer(new_suite)
+        return Response(new_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class TestsuiteDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project, suite_id):
+        suite_list = TestSuite.objects.filter(name=name, project__name=project)
+        if 0 == len(suite_list):
+            return True
+        elif 1 == len(suite_list) and str(suite_list[0].id) == suite_id:
+            return True
+        else:
+            return False
+
+    def _get_suite(self, project, pk):
+        try:
+            suite_obj = TestSuite.objects.get(id=pk, project__name=project)
+        except TestSuite.DoesNotExist:
+            raise Http404
+        return suite_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        suite_obj = self._get_suite(project, pk)
+        serializer = TestsuiteSerializer(suite_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestsuiteSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            suite_name = serializer.data['name']
+            suite_subsystem = serializer.data['subsystem']
+            suite_description = serializer.data['description']
+            plan_list = serializer.data['testplan']
+        except KeyError:
+            return Response({'detail': unicode("The lack of required parameters.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not self._check_name(suite_name, project, pk):
+            return Response({'detail': unicode("Found same name testsuite_name, "
+                                               "please check your testsuite_name name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        suite_obj = self._get_suite(project, pk)
+        suite_obj.name = suite_name
+        suite_obj.subsystem_id = suite_subsystem
+        suite_obj.description = suite_description
+        suite_obj.save()
+
+        suite_obj.testplan.clear()
+        for plan in plan_list:
+            suite_obj.testplan.add(plan)
+
+        new_serializer = TestsuiteSerializer(suite_obj)
+        return Response(new_serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def delete(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        suite_obj = self._get_suite(project, pk)
+        count = TestSuiteResult.objects.filter(testsuite_id=pk, project__name=project).count()
+        if count:
+            return Response({'detail': unicode("This testsuite has been used.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        suite_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TestcaseTypeList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = TestCaseType.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def get(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        type_list = TestCaseType.objects.filter(project__name=project)
+        serializer = TestcaseTypeSerializer(type_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestcaseTypeSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        type_name = serializer.data['name']
+        if not self._check_name(type_name, project):
+            return Response({'detail': unicode("Found same name type, please check your type name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        new_type = TestCaseType.objects.create(
+            name=type_name,
+            project=get_project_object(project)
+        )
+
+        new_serializer = TestcaseTypeSerializer(new_type)
+        return Response(new_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class TestcaseTypeDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = TestCaseType.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def _get_type(self, project, pk):
+        try:
+            type_obj = TestCaseType.objects.get(id=pk, project__name=project)
+        except TestCaseType.DoesNotExist:
+            raise Http404
+        return type_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        type_obj = self._get_type(project, pk)
+        serializer = TestcaseTypeSerializer(type_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestcaseTypeSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        type_name = serializer.data['name']
+        if not self._check_name(type_name, project):
+            return Response({'detail': unicode("Found same name type, "
+                                               "please check your type name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        type_obj = self._get_type(project, pk)
+        type_obj.name = type_name
+        type_obj.save()
+
+        new_serializer = TestcaseTypeSerializer(type_obj)
+        return Response(new_serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def delete(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        type_obj = self._get_type(project, pk)
+        type_obj.testcase_set.clear()
+        type_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TestcaseList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = TestCase.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def get(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        case_list = TestCase.objects.filter(project__name=project)
+        serializer = TestcaseSerializer(case_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestcaseSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            case_name = serializer.data['name']
+            case_type = serializer.data['type']
+            case_description = serializer.data['description']
+            case_script_path = serializer.data['script_path']
+            case_config_path = serializer.data['config_path']
+            case_parameters = serializer.data['parameters']
+            case_feature = serializer.data['feature']
+            suite_list = serializer.data['testsuite']
+        except KeyError:
+            return Response({'detail': unicode("The lack of required parameters.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not self._check_name(case_name, project):
+            return Response({'detail': unicode("Found same name testcase, "
+                                               "please check your testcase name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        new_case = TestCase.objects.create(
+            name=case_name,
+            type_id=case_type,
+            description=case_description,
+            script_path=case_script_path,
+            config_path=case_config_path,
+            parameters=case_parameters,
+            feature_id=case_feature,
+            project=get_project_object(project)
+        )
+
+        for suite in suite_list:
+            new_case.testsuite.add(suite)
+
+        new_serializer = TestcaseSerializer(new_case)
+        return Response(new_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class TestcaseDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project, id):
+        case_list = TestCase.objects.filter(name=name, project__name=project)
+        if 0 == len(case_list):
+            return True
+        elif 1 == len(case_list) and str(case_list[0].id) == id:
+            return True
+        else:
+            return False
+
+    def _get_case(self, project, pk):
+        try:
+            case_obj = TestCase.objects.get(id=pk, project__name=project)
+        except TestCase.DoesNotExist:
+            raise Http404
+        return case_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        case_obj = self._get_case(project, pk)
+        serializer = TestcaseSerializer(case_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestcaseSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            case_name = serializer.data['name']
+            case_type = serializer.data['type']
+            case_description = serializer.data['description']
+            case_script_path = serializer.data['script_path']
+            case_config_path = serializer.data['config_path']
+            case_parameters = serializer.data['parameters']
+            case_feature = serializer.data['feature']
+            suite_list = serializer.data['testsuite']
+        except KeyError:
+            return Response({'detail': unicode("The lack of required parameters.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not self._check_name(case_name, project, pk):
+            return Response({'detail': unicode("Found same name testcase_name, "
+                                               "please check your testcase_name name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        case_obj = self._get_case(project, pk)
+        case_obj.name = case_name
+        case_obj.type_id = case_type
+        case_obj.description = case_description
+        case_obj.script_path = case_script_path
+        case_obj.config_path = case_config_path
+        case_obj.parameters = case_parameters
+        case_obj.feature_id = case_feature
+        case_obj.save()
+
+        case_obj.testsuite.clear()
+        for suite in suite_list:
+            case_obj.testsuite.add(suite)
+
+        new_serializer = TestcaseSerializer(case_obj)
+        return Response(new_serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def delete(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        case_obj = self._get_case(project, pk)
+        count = TestCaseResult.objects.filter(testcase_id=pk, project__name=project).count()
+        if count:
+            return Response({'detail': unicode("This testcase has been used.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        case_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TestexecutionOsList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = OS.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def get(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        os_list = OS.objects.filter(project__name=project)
+        serializer = TestexecutionOsSerializer(os_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestexecutionOsSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        os_name = serializer.data['name']
+        if not self._check_name(os_name, project):
+            return Response({'detail': unicode("Found same name OS, please check your OS name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        new_os = OS.objects.create(name=os_name, project=get_project_object(project))
+        new_os.save()
+        new_serializer = TestexecutionOsSerializer(new_os)
+
+        return Response(new_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class TestexecutionOsDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = OS.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def _get_object(self, project, pk):
+        try:
+            os_obj = OS.objects.get(id=pk, project__name=project)
+        except OS.DoesNotExist:
+            raise Http404
+        return os_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        type_obj = self._get_object(project, pk)
+        serializer = TestexecutionOsSerializer(type_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestexecutionOsSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        os_name = serializer.data['name']
+        if not self._check_name(os_name, project):
+            return Response({'detail': unicode("Found same name os, please check your os name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        os_obj = self._get_object(project, pk)
+        os_obj.name = serializer.data['name']
+        os_obj.save()
+
+        new_serializer = TestexecutionOsSerializer(os_obj)
+        return Response(new_serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def delete(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        os_obj = self._get_object(project, pk)
+        os_obj.testexecution_set.clear()
+        os_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TestexecutionPlatformList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = Platform.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def get(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        platform_list = Platform.objects.filter(project__name=project)
+        serializer = TestexecutionPlatformSerializer(platform_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestexecutionPlatformSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        platform_name = serializer.data['name']
+        if not self._check_name(platform_name, project):
+            return Response({'detail': unicode("Found same name OS, please check your OS name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        new_platform = Platform.objects.create(name=platform_name, project=get_project_object(project))
+        new_platform.save()
+        new_serializer = TestexecutionPlatformSerializer(new_platform)
+
+        return Response(new_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class TestexecutionPlatformDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = Platform.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def _get_object(self, project, pk):
+        try:
+            platform_obj = Platform.objects.get(id=pk, project__name=project)
+        except Platform.DoesNotExist:
+            raise Http404
+        return platform_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        platform_obj = self._get_object(project, pk)
+        serializer = TestexecutionPlatformSerializer(platform_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestexecutionPlatformSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        platform_name = serializer.data['name']
+        if not self._check_name(platform_name, project):
+            return Response({'detail': unicode("Found same name platform, please check your platform name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        platform_obj = self._get_object(project, pk)
+        platform_obj.name = serializer.data['name']
+        platform_obj.save()
+
+        new_serializer = TestexecutionPlatformSerializer(platform_obj)
+        return Response(new_serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def delete(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        platform_obj = self._get_object(project, pk)
+        platform_obj.testexecution_set.clear()
+        platform_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TestexecutionList(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_name(self, name, project):
+        count = TestExecution.objects.filter(name=name, project__name=project).count()
+        return True if not count else False
+
+    def _check_os(self, os_id, project):
+        count = OS.objects.filter(id=os_id, project__name=project).count()
+        return True if 1 == count else False
+
+    def _check_platform(self, platform_id, project):
+        count = Platform.objects.filter(id=platform_id, project__name=project)
+        return True if 1 == count else False
+
+    def get(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        execution_list = TestExecution.objects.filter(project__name=project)
+        serializer = TestexecutionSerializer(execution_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, project):
+        # check auth
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        # check post data
+        serializer = TestexecutionSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # check execution name
+        execution_name = serializer.data['name']
+        if not self._check_name(execution_name, project):
+            return Response({'detail': unicode("Found same name execution, "
+                                               "please check your execution name.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        testplan = TestPlan.objects.get(id=serializer.data.get('testplan'), project__name=project)
+        if 'undated' == testplan.category.name:
+            count = TestExecution.objects.filter(testplan=testplan).count()
+            if count > 0:
+                return Response('execution already exist(This is undated test plan, '
+                                'just only have one execution).',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        new_execution = TestExecution.objects.create(
+            name=execution_name,
+            os_id=serializer.data['os'],
+            platform_id=serializer.data['platform'],
+            testplan=testplan,
+            runner=serializer.data['runner'],
+            project=get_project_object(project)
+        )
+        new_execution.save()
+        serializer = TestexecutionSerializer(new_execution)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class TestexecutionDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _get_object(self, project, pk):
+        try:
+            execution_obj = TestExecution.objects.get(id=pk, project__name=project)
+        except TestExecution.DoesNotExist:
+            raise Http404
+        return execution_obj
+
+    def get(self, request, project, pk):
+        # check auth
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        execution_obj = self._get_object(project, pk)
+        serializer = TestexecutionSerializer(execution_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        execution_obj = self._get_object(project, pk)
+        execution_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TestexecutionSuiteResultDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _get_execution_obj(self, project, pk):
+        try:
+            execution_obj = TestExecution.objects.get(id=pk, project__name=project)
+        except TestExecution.DoesNotExist:
+            raise Http404
+        return execution_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        execution_obj = self._get_execution_obj(project, pk)
+        suite_result_list = TestSuiteResult.objects.filter(testexecution=execution_obj)
+        serializer = TestsuiteResultSerializer(suite_result_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TestsuiteTestcaseDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _get_suite_obj(self, project, pk):
+        try:
+            suite_obj = TestSuite.objects.get(id=pk, project__name=project)
+        except TestSuite.DoesNotExist:
+            raise Http404
+        return suite_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        suite_obj = self._get_suite_obj(project, pk)
+        case_list = TestCase.objects.filter(testsuite=suite_obj)
+        serializer = TestcaseSerializer(case_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TestSuiteResultTestcaseResultDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _get_suiteresult_obj(self, project, pk):
+        try:
+            suiteresult_obj = TestSuiteResult.objects.get(id=pk, project__name=project)
+        except TestSuiteResult.DoesNotExist:
+            raise Http404
+        return suiteresult_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        suiteresult_obj = self._get_suiteresult_obj(project, pk)
+        caseresult_list = TestCaseResult.objects.filter(testsuite_result=suiteresult_obj)
+        serializer = TestcaseResultSerializer(caseresult_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TestcaseResult(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _check_(self, case_id, suite_result_id, project):
+        try:
+            suite_result = TestSuiteResult.objects.get(id=suite_result_id, project__name=project)
+        except TestSuite.DoesNotExist:
+            return 'suite_result(%s) is not exist' % suite_result_id
+
+        try:
+            test_case = TestCase.objects.get(id=case_id, project__name=project)
+        except TestCase.DoesNotExist:
+            return 'test case(%s) is not exist' % case_id
+
+        if suite_result.testsuite in test_case.testsuite.all():
+            return None
+        else:
+            return 'test case(%s) not in test suite result(%s)' % (case_id, suite_result_id)
+
+    def get(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        case_result_list = TestCaseResult.objects.filter(project__name=project)
+        serializer = TestcaseResultSerializer(case_result_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, project):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestcaseResultSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            case_id = serializer.data['testcase']
+            suite_result_id = serializer.data['testsuite_result']
+            result = str(serializer.data['result']).lower()
+            bug = serializer.data['bug']
+            log = serializer.data['log']
+            comments = serializer.data['comments']
+        except KeyError:
+            return Response({'detail': unicode("The lack of required parameters.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        message = self._check_(case_id, suite_result_id, project)
+        if message:
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+        if TestCaseResult.objects.filter(testcase__id=case_id,
+                                         testsuite_result__id=suite_result_id,
+                                         project__name=project
+                                         ).count():
+            return Response({'detail': unicode("Testcase result already exist. "
+                                               "please use PUT method to update result.")},
+                            status=status.HTTP_409_CONFLICT)
+
+        new_result = TestCaseResult.objects.create(testcase_id=case_id, testsuite_result_id=suite_result_id,
+                                                   result=result, bug=bug, log=log, comments=comments,
+                                                   project=get_project_object(project)
+                                                   )
+        new_result.save()
+        serializer = TestcaseResultSerializer(new_result)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class TestcaseResultDetail(APIView):
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+
+    def _get_caseresult_obj(self, project, pk):
+        try:
+            suiteresult_obj = TestCaseResult.objects.get(id=pk, project__name=project)
+        except TestCaseResult.DoesNotExist:
+            raise Http404
+        return suiteresult_obj
+
+    def get(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'reader')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        caseresult_obj = self._get_caseresult_obj(project, pk)
+        serializer = TestcaseResultSerializer(caseresult_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TestcaseResultSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            result = str(serializer.data['result']).lower()
+            bug = serializer.data['bug']
+            log = serializer.data['log']
+            comments = serializer.data['comments']
+        except KeyError:
+            return Response({'detail': unicode("The lack of required parameters.")},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        caseresult_obj = self._get_caseresult_obj(project, pk)
+        caseresult_obj.result = result
+        caseresult_obj.bug = bug
+        caseresult_obj.log = log
+        caseresult_obj.comments = comments
+        caseresult_obj.save()
+
+        serializer = TestcaseResultSerializer(caseresult_obj)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def delete(self, request, project, pk):
+        auth_status, message = check_auth(request.user, project, 'writer')
+        if not auth_status:
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)
+
+        caseresult_obj = self._get_caseresult_obj(project, pk)
+        caseresult_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
