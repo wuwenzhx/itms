@@ -1,0 +1,304 @@
+{% addtoblock "css" %}
+    <link href="{{ STATIC_URL }}report/static/css/regular_report_plugin.css" rel="stylesheet" type="text/css" />
+    <link href="{{ STATIC_URL }}report/static/css/report_chart_plugin.css" rel="stylesheet" type="text/css" />
+{% endaddtoblock %}
+
+{% addtoblock "js" %}
+    <script type="text/javascript" src="{{ STATIC_URL }}report/static/js/dpdk_report_plugin.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}report/static/js/charts.js"></script>
+{% endaddtoblock %}
+
+<script type="text/javascript">
+    {% if not auth_flag %}
+        window.location.href = window.location.origin;
+    {% endif %}
+    $(".header_title").text("Performance Test Report");
+</script>
+
+<br style="clear: both" />
+<div class="execution">
+    <div class="select_area" data-request-method="{{request.method}}">
+        <div class="select1">
+            <span>Platform:</span>
+            <select class="platform">
+                <option>All</option>
+                {% for platform in platform_list %}
+                    <option data-platform_id="{{ platform.id }}">{{platform.name}}</option>
+                {% endfor%}
+            </select>
+        </div>
+        <div class="select2">
+            <span>OS:</span>
+            <select class="os">
+                <option>All</option>
+                {% for os in os_list %}
+                    <option data-os_id="{{ os.id }}">{{os.name}}</option>
+                {% endfor%}
+            </select>
+        </div>
+    </div>
+
+    <div class="ui_dynamic_table dynamic_1">
+        <table class="ui_table ui_table_out" id="execution_table" cellpadding="0" cellspacing="0" width="100%" border="1">
+            <thead>
+            <tr>
+                <th style="width:7%;" class="th_center">Select</th>
+                <th style="width:10%;">ID</th>
+                <th style="width:17%;">Name</th>
+                <th style="width:8%;">App</th>
+                <th style="width:12%;">OS</th>
+                <th style="width:12%;">Platform</th>
+                <th style="width:11%;">Runner</th>
+                <th style="width:6%;" class="th_center">Total</th>
+                <th style="width:17%;" class="th_center">Time</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for exe in exe_list %}
+                <tr data-id="{{ exe.0.id }}" data-name="{{ exe.0.name }}">
+
+                    <td class="td_center"><input data-name="{{exe.0.name}}" type="checkbox" name="checkbox" value="{{exe.0.id}}" /></td>
+                    <td><div title="{{ exe.0.id }}">{{exe.0.id}}</div></td>
+                    <td><div title="{{ exe.0.name }}"><span class="name">{{exe.0.name}}</span></div></td>
+                    <td><div title="{{ exe.0.app.name }}">{{exe.0.app.name}}</div></td>
+                    <td><div title="{{ exe.0.os }}">{{exe.0.os}}</div></td>
+                    <td><div title="{{ exe.0.platform }}">{{exe.0.platform}}</div></td>
+                    <td><div title="{{ exe.0.runner }}">{{exe.0.runner}}</div></td>
+                    <td class="td_center"><div title="{{ exe.1 }}">{{exe.1}}</div></td>
+                    <td class="td_center"><div title="{{ exe.0.time | date:'Y-m-d H:i:s' }}">{{exe.0.time | date:'Y-m-d H:i:s'}}</div></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if exe_length == 0 %}
+            <div class="nodata">No data for show</div>
+        {% endif %}
+    </div>
+    <div class="ui_operation_area">
+        <div class="ui_button_area">
+            <span class="compare button_gray compare_exe">Compare</span>
+        </div>
+
+        <div class="ui_paginator_area">
+            {% if exe_length > 10 %}
+            <div class="ui_paginator">
+                {% if exe_list.has_previous %}
+                    <a class="previous" data-page="{{exe_list.previous_page_number}}"><< Previous</a>
+                {% endif %}
+
+                <span>
+                {% for p in exe_page_range %}
+                    {% ifequal p exe_list.number %}
+                        <span class="current">{{p}}</span>
+                    {% else %}
+                        <a class="page" data-page="{{p}}">{{p}}</a>
+                    {% endifequal %}
+                {% endfor %}
+                </span>
+
+                {% if exe_list.has_next %}
+                    <a class="next" data-page="{{ exe_list.next_page_number }}">Next >></a>
+                {% endif %}
+            <a class="count">[{{ exe_list.number }}/{{ exe_list.paginator.num_pages }} page]</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="suite perf_suite" style="display: none">
+
+    <div class="ui_table_title">TestSuite Results<span class="fill_info"></span></div>
+    <div class="ui_dynamic_table dynamic_1">
+        <table class="ui_table ui_table_out" id="suite_table" cellpadding="0" cellspacing="0" width="100%" border="1">
+            <thead>
+            <tr>
+                <th style="width:15%;" class="th_center">Suite Result ID</th>
+                <th style="width:31%;" class="th_center">Suite Name</th>
+                <th style="width:18%;" class="th_center">Run Number</th>
+                <th style="width:18%;" class="th_center">No_Run Number</th>
+                <th style="width:18%;" class="th_center">Total</th>
+            </tr>
+            </thead>
+            <tbody>
+                {# suite_result_list = [(suite_result, total, run_num, no_run_num), ...] #}
+                {% for result in suite_result_list %}
+                <tr data-suite-result-id="{{result.0.id}}" data-suite-result-name="{{result.0.testsuite.name}}" data-suite-id="{{result.0.testsuite.id}}" data-app-id="{{result.0.app.id}}">
+                    <td class="td_center"><div title="{{ result.0.id }}">{{result.0.id}}</div></td>
+                    <td><div title="{{ result.0.testsuite.name }}"><span class="name">{{result.0.testsuite.name}}</span></div></td>
+                    <td class="td_center"><div title="{{ result.2 }}">{{result.2}}</div></td>
+                    <td class="td_center"><div title="{{ result.3 }}">{{ result.3 }}</div></td>
+                    <td class="td_center"><div title="{{ result.1 }}">{{ result.1 }}</div></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if suite_result_list|length == 0 %}
+            <div class="nodata">No data for show</div>
+        {% endif %}
+    </div>
+
+    <div class="ui_operation_area">
+
+        <div class="ui_paginator_area">
+            {% if suite_result_length > 10 %}
+            <div class="ui_paginator">
+                {% if suite_result_list.has_previous %}
+                    <a class="previous" data-page="{{suite_result_list.previous_page_number}}"><< Previous</a>
+                {% endif %}
+
+                <span>
+                {% for p in suite_page_range %}
+                    {% ifequal p suite_result_list.number %}
+                        <span class="current">{{p}}</span>
+                    {% else %}
+                        <a class="page" data-page="{{p}}">{{p}}</a>
+                    {% endifequal %}
+                {% endfor %}
+                </span>
+
+                {% if suite_result_list.has_next %}
+                    <a class="next" data-page="{{ suite_result_list.next_page_number }}">Next >></a>
+                {% endif %}
+            <a class="count">[{{ suite_result_list.number }}/{{ suite_result_list.paginator.num_pages }} page]</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="suite_detail" style="display: none">
+    <div class="ui_table_title">TestCase Results<span class="fill_info"></span></div>
+    <div class="ui_dynamic_table dynamic_1">
+        <table class="ui_table ui_table_out ui_cell_table" id="suite_detail_table" cellpadding="0" cellspacing="0" width="100%" border="1">
+            <thead>
+            <tr>
+                <th class="th_center">ID</th>
+                <th class="th_center">Result ID</th>
+                <th>Name</th>
+                <th>Bug</th>
+                <th>Log</th>
+                <th>Comments</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for result in detail_result_list %}
+                <tr data-result-id="{{ result.id }}" data-app-id="{{ result.app_id }}">
+                    <td class="td_center"><div title="{{ result.testcase.id }}">{{ result.testcase.id }}</div></td>
+                    <td class="td_center"><div title="{{ result.id }}">{{ result.id }}</div></td>
+                    <td><div title="{{ result.testcase.name }}"><span class="name">{{ result.testcase.name }}</span></div></td>
+                    <td><div title="{{ result.bug }}">{{ result.bug }}</div></td>
+                    <td><div title="{{ result.log }}">{{ result.log }}</div></td>
+                    <td><div title="{{ result.comments }}">{{ result.comments }}</div></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% if detail_result_list|length == 0 %}
+            <div class="nodata">No data for show</div>
+        {% endif %}
+    </div>
+
+    <div class="ui_operation_area">
+        <div class="ui_paginator_area">
+            {% if detail_result_length > 10 %}
+            <div class="ui_paginator">
+                {% if detail_result_list.has_previous %}
+                    <a class="previous" data-page="{{detail_result_list.previous_page_number}}"><< Previous</a>
+                {% endif %}
+
+                <span>
+                {% for p in suite_detail_page_range %}
+                    {% ifequal p detail_result_list.number %}
+                        <span class="current">{{p}}</span>
+                    {% else %}
+                        <a class="page" data-page="{{p}}">{{p}}</a>
+                    {% endifequal %}
+                {% endfor %}
+                </span>
+
+                {% if detail_result_list.has_next %}
+                    <a class="next" data-page="{{ detail_result_list.next_page_number }}">Next >></a>
+                {% endif %}
+            <a class="count">[{{ detail_result_list.number }}/{{ detail_result_list.paginator.num_pages }} page]</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="case_detail" style="display:none">
+    {% if chart_value_list|length > 0 %}
+        <div class="chart_area">
+            <div class="chart_title span" style="margin-top:50px;"><span></span></div>
+            <div id="case_legend"></div>
+            <div id="bar_chart" style="height: 380px;" data-packet_size="{{ packet_size }}" data-chart_value_list="{{ chart_value_list }}" ></div>
+            <br style="clear: both" />
+        </div>
+    {% endif %}
+    <div class="ui_table_title">TestCase Results Detail<span class="fill_info"></span></div>
+    <div class="ui_dynamic_table dynamic_1">
+        <table class="ui_table ui_table_out ui_cell_table" id="case_detail_table" cellpadding="0" cellspacing="0" border="1">
+            <thead>
+            <tr>
+                {% for attr in attr_obj_list %}
+                    <th class="th_center" title="{{ attr.name }}">{{ attr.name }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for result in result_list %}
+                <tr>
+                    {% for value in result %}
+                        <td class="td_center"><div title="{{ value }}">{{ value }}</div></td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% if result_list|length == 0 %}
+            <div class="nodata">No data for show</div>
+        {% endif %}
+    </div>
+
+</div>
+
+<div class="case" style="display: none">
+    <div class="ui_table_title">Contrast Analysis Results</div>
+    <div class="ui_dynamic_table dynamic_1">
+    <table class="ui_table ui_table_out ui_cell_table" id="exe_compare_table" cellpadding="0" cellspacing="0" border="1">
+        <thead>
+            <tr>
+                {% for title in dpdk_exe_diff_title_list %}
+                    <th>{{ title }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody data-result="{{ dpdk_exe_diff_result_list }}" data-packet-size-all="{{ packet_size_all }}">
+            {% for suite, case, execution, attr_list in dpdk_exe_diff_result_list %}
+                <tr>
+                {% if suite.1 %}
+                    <td rowspan="{{ suite.1 }}" title="{{ suite.0 }}" style="background-color: #FFF">{{ suite.0 }}</td>
+                {% endif %}
+                {% if case.1 %}
+                    <td rowspan="{{ case.1 }}" title="{{ case.0 }}" class="casename" data-suite-name="{{ suite.0 }}" style="background-color: #FFF">{{ case.0 }}</td>
+                {% endif %}
+                <td title="{{ execution }}">{{ execution }}</td>
+                {% for attr in attr_list %}
+                    <td title="{{ attr }}">{{ attr }}</td>
+                {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    <div class="chart_area" style="display:none">
+        <div class="chart_title span" style="margin-top:50px;"><span></span></div>
+        <div id="line_legend"></div>
+        <div id="compare_case_chart" style="height: 380px;" data-case_chart="{{ case_chart_data }}"></div>
+        <div class="chart_nodata" style="display: none; top: 100px"> No test result to show !! </div>
+        <br style="clear: both">
+    </div>
+    <br style="clear: both">
+</div>

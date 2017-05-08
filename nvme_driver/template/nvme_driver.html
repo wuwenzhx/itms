@@ -1,0 +1,21 @@
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{ STATIC_URL }}nvme_driver/static/js/charts.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL}}nvme_driver/static/js/nvme_driver_trend_chart_plugin.js"></script>
+{% endaddtoblock %}
+<html>
+<div>{{chart_data}}</div>
+<head>
+   <title>Highcharts (runoob.com)</title>
+   <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="http://code.highcharts.com/highcharts.js"></script>  
+   <script src="http://code.highcharts.com/highcharts-more.js"></script>  
+
+</head>
+<body>
+
+<div id="chart" class="chart_area">
+	<div id="regular_chart" style="height: 100%" data-chart-data = "{{ chart_data}}"></div>
+</div>
+</script>
+</body>
+</html>
