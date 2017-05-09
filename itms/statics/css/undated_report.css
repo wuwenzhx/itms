@@ -1,0 +1,75 @@
+.undated_class {
+    height: 95%;
+    color: #636363;
+}
+.ui_undated {
+    height: 100%;
+    overflow-y: auto;
+}
+.ui_undated .header {
+    height: 10%;
+    width: 100%;
+    min-height: 80px;
+}
+.ui_undated .header_title {
+    position: relative;
+    left: 2%;
+    font-size: 30px;
+    display: inline-block;
+    width: 96%;
+    height: 100%;
+    line-height: 300%;
+    color: #00AEEF;
+    border-bottom: 1px solid #E0E0E0;
+    font-family: "Intel Clear Light", "tahoma", Helvetica, "helvetica", Arial, sans-serif;
+}
+.ui_undated .chart {
+    width: 96%;
+    margin: auto;
+    border-bottom: 1px solid #E0E0E0;
+}
+.ui_undated .undated_report {
+    width: 96%;
+    margin: auto;
+}
+.ui_button_area {
+    width: 50%;
+    float: left;
+}
+.ui_button_area .compare {
+    display: inline-block;
+    width: 90px;
+    height: 28px;
+    border: 1px solid #3a87ad;
+    border-radius: 28px;
+    text-align: center;
+    line-height: 28px;
+    color: #3a87ad;
+    margin-left: 30px;
+}
+.button_gray {
+  color: gray !important;
+  border-color: gray !important;
+}
+.button_gray:hover {
+    cursor: default !important;
+}
+table td, table th {
+    padding: 5px 0 5px 20px !important;
+}
+table th {
+    background-color: rgb(0, 113, 197) !important;
+}
+
+tbody tr {
+  border-bottom: 1px solid #cdcdcd !important;
+  background: white !important;
+}
+.ui_table_title {
+    height: 32px !important;
+    line-height: 32px;
+    background-color: #e5f2fe;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 500;
+}

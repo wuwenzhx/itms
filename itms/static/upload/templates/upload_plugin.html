@@ -1,0 +1,23 @@
+{% addtoblock "css" %}
+    <link href="{{ STATIC_URL }}upload/static/css/upload.css" rel="stylesheet" type="text/css" />
+{% endaddtoblock %}
+
+{% addtoblock "js" %}
+    <script type="text/javascript" src="{{ STATIC_URL }}upload/static/js/upload.js"></script>
+{% endaddtoblock %}
+
+<script type="text/javascript">
+</script>
+
+<div class="upload">
+    <form method="post" action="/upload/" name='upload_form' id='upload_form' enctype="multipart/form-data">
+        {% csrf_token %}
+        <div><label>Select Files to Upload</label></div>
+        <div class="file_box"><input type="file" name="file" multiple="multiple" id="file_input" class="filter"/></div>
+        <br />
+        <input type="submit" value="Upload" class="upload_btn"/>
+   </form>
+    <div class="callback"><span>{{ upload_status }}</span></div>
+
+</div>
+<div class="file_list" style="display: none"></div>

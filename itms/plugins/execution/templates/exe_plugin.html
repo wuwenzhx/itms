@@ -1,0 +1,1194 @@
+{% addtoblock "js" %}
+    <script type="text/javascript" src="{{ STATIC_URL }}execution/static/js/exe.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}execution/static/js/util.js"></script>
+{% endaddtoblock %}
+
+{% addtoblock "css" %}
+    <link href="{{ STATIC_URL }}execution/static/css/exe.css" rel="stylesheet" type="text/css"/>
+{% endaddtoblock %}
+
+<script type="text/javascript">
+    {% if not auth_flag %}
+        window.location.href = window.location.origin;
+    {% endif %}
+</script>
+
+<div class="callback_status" data-request-method="{{request.method}}" data-status="{{ status }}" data-message="{{ message }}" data-user="{{ user }}" style="display: none"></div>
+
+{# tool bar #}
+<div class="ui_edit_area">
+    <div class="ui_edit_left_box">
+        <div class="ui_add_icon" style="background: url({{ STATIC_URL }}images/bundle.png) -53px -112px no-repeat;"></div>
+        <button class="ui_add_btn">New Execution</button>
+    </div>
+    <div class="ui_edit_left_box">
+        <img class="ui_filter_icon" src="{{ STATIC_URL }}images/subscript_obj.gif">
+        <button class="ui_filter_btn">Filter</button>
+    </div>
+    <div class="ui_edit_left_box" style="border: 0">
+        <input type="search" class='ui_item_name_search' placeholder="Name"/>
+        <span class='ui_item_name_search_icon' data-starter="exe"></span>
+    </div>
+</div>
+
+{# filter area #}
+<div class="ui_filter_item_area" style="display: none;">
+    <div class="tool">
+        <div class="action ui_cancel_filter" style="background: url({{ STATIC_URL }}images/refresh2.png) center no-repeat"></div>
+        <div class="action ui_filter" data-starter="exe" style="background: url({{ STATIC_URL }}images/magnify.png) center no-repeat"></div>
+    </div>
+    <div class="ui_filter_item">
+        <div class="header">
+            <div class="header_icon" style="background: url({{ STATIC_URL }}images/paper-clip.png) center no-repeat"></div>
+            <div class="txt">Execution Filter</div>
+        </div>
+        <div class="ui_filter_box">
+            <span class="title">Environment Type:</span>
+            <select class="filter type_filter" name="type_filter">
+                <option></option>
+                {% for type in type_list %}
+                <option id="{{ type.id }}">{{ type.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="ui_filter_box">
+            <span class="title">Status:</span>
+            <select class="filter status_filter" name="status_filter">
+                <option></option>
+                <option class="filter_select_option" title="false">Enable</option>
+                <option class="filter_select_option" title="true">Disable</option>
+            </select>
+        </div>
+    </div>
+    <div class="ui_filter_item">
+        <div class="header">
+            <div class="header_icon" style="background: url({{ STATIC_URL }}images/paper-clip.png) center no-repeat"></div>
+            <div class="txt">iTEC Filter</div>
+        </div>
+        <div class="ui_filter_box">
+            <span class="title">iTEC:</span>
+            <select class="filter itec_filter" name="itec_filter">
+                <option></option>
+                {% for itec in itec_list %}
+                <option id="{{itec.id}}" class="filter_select_option">{{itec.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+</div>
+
+{# detail area #}
+<div class="ui_detail_area">
+    <div class="detail_frame">
+        <div class="detail_area">
+            {% for exe_config in exe_config_list %}
+                <div class="ui_list">
+                    <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -15px -17px no-repeat;"></div></div>
+                    <div class="info">
+                        <div style="height: 60%">
+                            <span class="id" title="{{ exe_config.exe.id }}">ID: {{ exe_config.exe.id }}</span>
+                            <span class="name" title="{{ exe_config.exe.name }}">Name: {{ exe_config.exe.name }}</span>
+                        </div>
+                        <div style="height: 40%;">
+                            <span class="exe_attr" title="itec">iTEC: {{ exe_config.exe.itec.ip }}</span>
+                            <span class="exe_attr" title="worker">Worker: {{ exe_config.exe.worker }}</span>
+                            <span class="exe_attr" title="type">Type: {{ exe_config.exe.env_type }}</span>
+                            {% if exe_config.exe.is_invalid %}
+                                <span class="exe_attr" title="status">Status: Disable</span>
+                            {% else %}
+                                <span class="exe_attr" title="type">Status: Enable</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {# show regular execution detail #}
+                {% ifequal exe_config.exe.env_type.id 1 %}
+                <div class="ui_detail_info" data-type="{{ exe_config.exe.env_type.id }}" data-id="{{exe_config.exe.id }}" data-status="{{ exe_config.exe.is_invalid }}" style="display: none;">
+                    <div class="ui_detail_header">
+                        <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -50px -10px no-repeat;"></div></div>
+                        <div class="info">
+                            <div style="height: 100%">
+                                <span class="title" title="{{ exe_config.exe.id }}">ID: {{ exe_config.exe.id }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui_detail_tab_area">
+                        <div class="ui_detail_tab ui_tab_focus" id="tab_0">Overview</div>
+                    </div>
+
+                    <div class="ui_detail_content_area">
+                        <div class="ui_overview_area">
+                            <div class="header">
+                                <span class="ui_status" data-starter="status_detail" data-email="{{ user.email }}"></span>
+                                <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                            </div>
+                            {# show profile info #}
+                            <div class="ui_exe_content">
+                                <div class="sub_header profile">
+                                    <span>Profile</span>
+                                </div>
+                                <div class="content_area">
+                                    <div class="content">
+                                        <span class="title_repeat_item">Name :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.name }}">{{ exe_config.exe.name }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">TestPlan :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.testplan.name }}">{{ exe_config.exe.testplan.name }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">iTEC :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.itec.name }}">{{ exe_config.exe.itec.name }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">Owner :</span>
+                                        <span class="owner non_editable" name="{{ exe_config.exe.owner }}" title="{{ exe_config.exe.owner }}">{{ exe_config.exe.owner }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">Worker :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.worker }}">{{ exe_config.exe.worker }}</span>
+                                    </div>
+                                    <div class="content result_box" data-id="{{ exe_config.exe.testplan.id }}" data-category="{{ exe_config.exe.testplan.category.name }}" data-perf="{{ exe_config.exe.testplan.performance }}" data-proj="{{ proj_name }}">
+                                        <span class="title_repeat_item">Result :</span>
+                                        <img class="result_icon" style="cursor: pointer;" src="{{ STATIC_URL }}images/result.png">
+                                    </div>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                            {#show configuration#}
+                            <div class="ui_exe_content">
+                                <div class="sub_header">
+                                    <span>Configuration</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">OS :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.os }}">{{ exe_config.config.os }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">Kernel  :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.kernel }}">{{ exe_config.config.kernel }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">GCC :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.gcc }}">{{ exe_config.config.gcc }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">Target :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.target }}">{{ exe_config.config.target }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">NIC :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.nic }}">{{ exe_config.config.nic}}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">TestType :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.test_type }}">{{ exe_config.config.test_type }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">Driver :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.driver }}">{{ exe_config.config.driver }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">Platform :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.platform }}">{{ exe_config.config.platform }}</span>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                            {# show schedule & source info #}
+                            <div class="ui_exe_content">
+                                <div class="sub_header">
+                                    <span>Schedule & Source</span>
+                                </div>
+                                <div class="content_area">
+                                    <div class="content">
+                                        <span class="title_repeat_item">Schedule :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.schedule }}">{{ exe_config.exe.schedule }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">GitRepo :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.git_repo }}">{{ exe_config.exe.git_repo }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">Start Time :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.runtime | date:"H:i"}}">{{  exe_config.exe.runtime | date:"H:i"}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                        </div>
+                        <br style="clear: both">
+                    </div>
+                </div>
+                {% endifequal %}
+                {# show one-time commit id execution detail #}
+                {% ifequal exe_config.exe.env_type.id 2 %}
+                <div class="ui_detail_info" data-type="{{ exe_config.exe.env_type.id }}" data-id="{{ exe_config.exe.id }}" data-status="{{ exe_config.exe.is_invalid }}" style="display: none;">
+                    <div class="ui_detail_header">
+                        <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -50px -10px no-repeat;"></div></div>
+                        <div class="info">
+                            <div style="height: 100%">
+                                <span class="title" title="{{ exe_config.exe.id }}">ID: {{ exe_config.exe.id }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui_detail_tab_area">
+                        <div class="ui_detail_tab ui_tab_focus" id="tab_0">Overview</div>
+                    </div>
+                    <div class="ui_detail_content_area">
+                        {% if exe_config.exe.is_invalid%}
+                        {# one_time commit && invalid is editable #}
+                        <div class="ui_overview_area">
+                            <div class="header">
+                                <span class="ui_status" data-starter="status_detail" data-email="{{ user.email }}"></span>
+                                <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                                <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+                            </div>
+                            <div class="ui_exe_content">
+                                <div class="sub_header profile">
+                                    <span>Profile</span>
+                                </div>
+                                <div class="content_area">
+                                    <div class="content">
+                                        <span class="title">Name :</span>
+                                        <input class="name" type="text" value="{{ exe_config.exe.name }}">
+                                    </div>
+                                    <div class="content">
+                                        <span class="title">TestPlan:</span>
+                                        <input class="plan_name" type="text" value="{{ exe_config.exe.testplan.name }}" id="{{ exe_config.exe.testplan_id }}">
+                                        <img class="find_icon" style="cursor: pointer;" src="{{ STATIC_URL }}images/binocular.png">
+                                    </div>
+                                    <div class="content">
+                                        <span class="title">iTEC :</span>
+                                        <select class="filter itec_select">
+                                            <option id="0"></option>
+                                            {% for itec in itec_list %}
+                                                {% ifequal itec exe_config.exe.itec %}
+                                                    <option id="{{ itec.id }} " selected="selected">{{ itec.name }}</option>
+                                                {% else %}
+                                                    <option id="{{ itec.id }}">{{ itec.name }}</option>
+                                                {% endifequal %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title">Owner :</span>
+                                        <input class="owner ui_input_disabled" name="{{ exe_config.exe.owner }}" type="text" value="{{ exe_config.exe.owner }}" disabled="disabled">
+                                    </div>
+                                    <div class="content workers">
+                                        <span class="title">Worker :</span>
+                                        <select class="filter worker_select" data-info="{{ worker_info }}">
+                                            <option></option>
+                                            {% for worker in worker_list %}
+                                                {% ifequal worker exe_config.exe.worker %}
+                                                    <option id="0" selected="selected">{{ exe_config.exe.worker }}</option>
+                                                {% else %}
+                                                    <option>{{ worker }}</option>
+                                                {% endifequal %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="content result_box" data-id="{{ exe_config.exe.testplan.id }}" data-category="{{ exe_config.exe.testplan.category.name }}" data-perf="{{ exe_config.exe.testplan.performance }}" data-proj="{{ proj_name }}">
+                                        <span class="title">Result :</span>
+                                        <img class="result_icon" style="cursor: pointer;" src="{{ STATIC_URL }}images/result.png">
+                                    </div>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                            <div class="ui_exe_content config">
+                                <div class="sub_header">
+                                    <span>Configuration</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">OS :</span>
+                                    <select class="filter os_select">
+                                        <option></option>
+                                        {% for os in os_list %}
+                                            {% ifequal os exe_config.config.os %}
+                                                <option id="0" selected="selected">{{ exe_config.config.os }}</option>
+                                            {% else %}
+                                                <option>{{ os }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">Kernel  :</span>
+                                    <select class="filter kernel_select">
+                                        <option></option>
+                                        {% for kernel in kernel_list %}
+                                            {% ifequal kernel exe_config.config.kernel %}
+                                                <option id="0" selected="selected">{{ exe_config.config.kernel }}</option>
+                                            {% else %}
+                                                <option>{{ kernel }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">GCC :</span>
+                                    <select class="filter gcc_select">
+                                        <option></option>
+                                        {% for gcc in gcc_list %}
+                                            {% ifequal gcc exe_config.config.gcc %}
+                                                <option id="0" selected="selected">{{ exe_config.config.gcc }}</option>
+                                            {% else %}
+                                                <option>{{ gcc }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">Target :</span>
+                                    <select class="filter target_select">
+                                        <option></option>
+                                        {% for target in target_list %}
+                                            {% ifequal target exe_config.config.target %}
+                                                <option id="0" selected="selected">{{ exe_config.config.target }}</option>
+                                            {% else %}
+                                                <option>{{ target }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">NIC :</span>
+                                    <select class="filter nic_select">
+                                        <option></option>
+                                        {% for nic in nic_list %}
+                                            {% ifequal nic exe_config.config.nic %}
+                                                <option id="0" selected="selected">{{ exe_config.config.nic }}</option>
+                                            {% else %}
+                                                <option>{{ nic }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">TestType :</span>
+                                    <select class="filter test_type_select">
+                                        <option></option>
+                                        {% for type in test_type_list %}
+                                            {% ifequal type exe_config.config.test_type %}
+                                                <option id="0" selected="selected">{{ exe_config.config.test_type }}</option>
+                                            {% else %}
+                                                <option>{{ type }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">Driver :</span>
+                                    <select class="filter driver_select">
+                                        <option></option>
+                                        {% for driver in driver_list %}
+                                            {% ifequal driver exe_config.config.driver %}
+                                                <option id="0" selected="selected">{{ exe_config.config.driver }}</option>
+                                            {% else %}
+                                                <option>{{ driver }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">Platform :</span>
+                                    <select class="filter platform_select">
+                                        <option></option>
+                                        {% for platform in platform_list %}
+                                            {% ifequal platform exe_config.config.platform %}
+                                                <option id="0" selected="selected">{{ exe_config.config.platform }}</option>
+                                            {% else %}
+                                                <option>{{ platform }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                            <div class="ui_exe_content">
+                                <div class="sub_header">
+                                    <span>Source</span>
+                                </div>
+                                <div class="content_area">
+                                    <div class="content gitrepo">
+                                        <span class="title">Git Repo :</span>
+                                        <select class="filter git_repo_select">
+                                            <option></option>
+                                            {% for gitrepo in gitrepo_list %}
+                                                {% ifequal gitrepo exe_config.exe.git_repo %}
+                                                    <option id="0" selected="selected">{{ exe_config.exe.git_repo }}</option>
+                                                {% else %}
+                                                    <option>{{ gitrepo }}</option>
+                                                {% endifequal %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="content">
+                                        <form method="post" action="/dpdk/executioncenter/executionsetting/" enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                            <span class="title">Patch :</span>
+                                            <input class="file_name" data-patch="{{ exe_config.exe.patch }}" value="{{ exe_config.exe.patch }}">
+                                            <input class="file_select" id="file_btn" name="patch" type="file" data-path="{{ path }}">
+                                            <img class="patch_icon" style="cursor: pointer;" src="{{ STATIC_URL }}images/project.png">
+                                        </form>
+                                        <div class="upload_file">
+                                            <div class="upload_callback" data-patch_name="{{ patch_name }}" data-status="{{ upload_status }}" data-message="{{ upload_message }}" data-progress="{{ progress }}"></div>
+                                        </div>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title">Commit ID :</span>
+                                        <input class="commit_id" type="text" value="{{ exe_config.exe.commit_id }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                        </div>
+                        <br style="clear: both">
+                        {% else %}
+                        {# one_time commit && valid is not editable #}
+                        <div class="ui_overview_area">
+                            <div class="header">
+                                <span class="ui_status" data-starter="status_detail" data-email="{{ user.email }}"></span>
+                                <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                                <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+                            </div>
+                            <div class="ui_exe_content">
+                                <div class="sub_header profile">
+                                    <span>Profile</span>
+                                </div>
+                                <div class="content_area">
+                                    <div class="content">
+                                        <span class="title_repeat_item">Name :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.name }}">{{ exe_config.exe.name }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">TestPlan:</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.testplan.name }}">{{ exe_config.exe.testplan.name }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">iTEC :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.itec.name }}">{{ exe_config.exe.itec.name }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">Owner :</span>
+                                        <span class="non_editable owner" name="{{ exe_config.exe.owner }}" title="{{ exe_config.exe.owner }}">{{ exe_config.exe.owner }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">Worker :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.worker }}">{{ exe_config.exe.worker }}</span>
+                                    </div>
+                                    <div class="content result_box" data-id="{{ exe_config.exe.testplan.id }}" data-category="{{ exe_config.exe.testplan.category.name }}" data-perf="{{ exe_config.exe.testplan.performance }}" data-proj="{{ proj_name }}">
+                                        <span class="title_repeat_item">Result :</span>
+                                        <img class="result_icon" style="cursor: pointer;" src="{{ STATIC_URL }}images/result.png">
+                                    </div>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                            <div class="ui_exe_content">
+                                <div class="sub_header">
+                                    <span>Configuration</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">OS :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.os }}">{{ exe_config.config.os }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">Kernel  :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.kernel }}">{{ exe_config.config.kernel }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">GCC :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.gcc }}">{{ exe_config.config.gcc }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">Target :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.target }}">{{ exe_config.config.target }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">NIC :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.nic }}">{{ exe_config.config.nic }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">TestType :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.test_type }}">{{ exe_config.config.test_type }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">Driver :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.driver }}">{{ exe_config.config.driver }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">Platform :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.platform }}">{{ exe_config.config.platform }}</span>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                            <div class="ui_exe_content">
+                                <div class="sub_header">
+                                    <span>Source</span>
+                                </div>
+                                <div class="content_area">
+                                    <div class="content">
+                                        <span class="title_repeat_item">Git Repo :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.git_repo }}">{{ exe_config.exe.git_repo }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">Patch :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.patch }}">{{ exe_config.exe.patch }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">Commit ID :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.commit_id }}">{{ exe_config.exe.commit_id }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                        </div>
+                        <br style="clear: both">
+                        {% endif %}
+                    </div>
+                </div>
+                {% endifequal %}
+
+                {# show one-time package execution detail #}
+                {% ifequal exe_config.exe.env_type.id 3 %}
+                <div class="ui_detail_info" data-type="{{ exe_config.exe.env_type.id }}" data-id="{{ exe_config.exe.id }}" data-status="{{ exe_config.exe.is_invalid }}" style="display: none;">
+                    <div class="ui_detail_header">
+                        <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -50px -10px no-repeat;"></div></div>
+                        <div class="info">
+                            <div style="height: 100%">
+                                <span class="title" title="{{ exe_config.exe.id }}">ID: {{ exe_config.exe.id }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui_detail_tab_area">
+                        <div class="ui_detail_tab ui_tab_focus" id="tab_0">Overview</div>
+                    </div>
+                    <div class="ui_detail_content_area">
+                        {% if exe_config.exe.is_invalid %}
+                        {# one_time package && invalid is editable #}
+                        <div class="ui_overview_area">
+                            <div class="header">
+                                <span class="ui_status" data-starter="status_detail" data-email="{{ user.email }}"></span>
+                                <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                                <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+                            </div>
+                            <div class="ui_exe_content">
+                                <div class="sub_header profile">
+                                    <span>Profile</span>
+                                </div>
+                                <div class="content_area">
+                                    <div class="content">
+                                        <span class="title">Name :</span>
+                                        <input class="name" type="text" value="{{ exe_config.exe.name }}">
+                                    </div>
+                                    <div class="content">
+                                        <span class="title">TestPlan:</span>
+                                        <input class="plan_name" type="text" value="{{ exe_config.exe.testplan.name }}" id="{{ exe_config.exe.testplan_id }}">
+                                        <img class="find_icon" style="cursor: pointer;" src="{{ STATIC_URL }}images/binocular.png">
+                                    </div>
+                                    <div class="content">
+                                        <span class="title">iTEC :</span>
+                                        <select class="filter itec_select">
+                                            <option id="0"></option>
+                                            {% for itec in itec_list %}
+                                                {% ifequal itec exe_config.exe.itec %}
+                                                    <option id="{{ itec.id }} " selected="selected">{{ itec.name }}</option>
+                                                {% else %}
+                                                    <option id="{{ itec.id }}">{{ itec.name }}</option>
+                                                {% endifequal %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title">Owner :</span>
+                                        <input class="owner ui_input_disabled" name="{{ exe_config.exe.owner }}" type="text" value="{{ exe_config.exe.owner }}" disabled="disabled">
+                                    </div>
+                                    <div class="content workers">
+                                        <span class="title">Worker :</span>
+                                        <select class="filter worker_select" data-info="{{ worker_info }}">
+                                            <option></option>
+                                            {% for worker in worker_list %}
+                                                {% ifequal worker exe_config.exe.worker %}
+                                                    <option selected="selected">{{ exe_config.exe.worker }}</option>
+                                                {% else %}
+                                                    <option>{{ worker }}</option>
+                                                {% endifequal %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="content result_box" data-id="{{ exe_config.exe.testplan.id }}" data-category="{{ exe_config.exe.testplan.category.name }}" data-perf="{{ exe_config.exe.testplan.performance }}" data-proj="{{ proj_name }}">
+                                        <span class="title">Result :</span>
+                                        <img class="result_icon" style="cursor: pointer;" src="{{ STATIC_URL }}images/result.png">
+                                    </div>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                            <div class="ui_exe_content config">
+                                <div class="sub_header">
+                                    <span>Configuration</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">OS :</span>
+                                    <select class="filter os_select">
+                                        <option></option>
+                                        {% for os in os_list %}
+                                            {% ifequal os exe_config.config.os %}
+                                                <option selected="selected">{{ exe_config.config.os }}</option>
+                                            {% else %}
+                                                <option>{{ os }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">Kernel  :</span>
+                                    <select class="filter kernel_select">
+                                        <option></option>
+                                        {% for kernel in kernel_list %}
+                                            {% ifequal kernel exe_config.config.kernel %}
+                                                <option selected="selected">{{ exe_config.config.kernel }}</option>
+                                            {% else %}
+                                                <option>{{ kernel }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">GCC :</span>
+                                    <select class="filter gcc_select">
+                                        <option></option>
+                                        {% for gcc in gcc_list %}
+                                            {% ifequal gcc exe_config.config.gcc %}
+                                                <option selected="selected">{{ exe_config.config.gcc }}</option>
+                                            {% else %}
+                                                <option>{{ gcc }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">Target :</span>
+                                    <select class="filter target_select">
+                                        <option></option>
+                                        {% for target in target_list %}
+                                            {% ifequal target exe_config.config.target %}
+                                                <option selected="selected">{{ exe_config.config.target }}</option>
+                                            {% else %}
+                                                <option>{{ target }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">NIC :</span>
+                                    <select class="filter nic_select">
+                                        <option></option>
+                                        {% for nic in nic_list %}
+                                            {% ifequal nic exe_config.config.nic %}
+                                                <option selected="selected">{{ exe_config.config.nic }}</option>
+                                            {% else %}
+                                                <option>{{ nic }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">TestType :</span>
+                                    <select class="filter test_type_select">
+                                        <option></option>
+                                        {% for type in test_type_list %}
+                                            {% ifequal type exe_config.config.test_type %}
+                                                <option selected="selected">{{ exe_config.config.test_type }}</option>
+                                            {% else %}
+                                                <option>{{ type }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">Driver :</span>
+                                    <select class="filter driver_select">
+                                        <option></option>
+                                        {% for driver in driver_list %}
+                                            {% ifequal driver exe_config.config.driver %}
+                                                <option selected="selected">{{ exe_config.config.driver }}</option>
+                                            {% else %}
+                                                <option>{{ driver }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title">Platform :</span>
+                                    <select class="filter platform_select">
+                                        <option></option>
+                                        {% for platform in platform_list %}
+                                            {% ifequal platform exe_config.config.platform %}
+                                                <option selected="selected">{{ exe_config.config.platform }}</option>
+                                            {% else %}
+                                                <option>{{ platform }}</option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                            <div class="ui_exe_content">
+                                <div class="sub_header">
+                                    <span>Source</span>
+                                </div>
+                                <div class="content_area">
+                                    <div class="content">
+                                        <span class="title">Package :</span>
+                                        <input class="package" type="text" value="{{ exe_config.exe.package }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                        </div>
+                        <br style="clear: both">
+                        {% else %}
+                        {# one_time package && valid is not editable #}
+                        <div class="ui_overview_area">
+                            <div class="header">
+                                <span class="ui_status" data-starter="status_detail" data-email="{{ user.email }}"></span>
+                                <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                                <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+                            </div>
+                            <div class="ui_exe_content">
+                                <div class="sub_header">
+                                    <span>Profile</span>
+                                </div>
+                                <div class="content_area">
+                                    <div class="content">
+                                        <span class="title_repeat_item">Name :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.name }}">{{ exe_config.exe.name }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">TestPlan:</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.testplan.name }}">{{ exe_config.exe.testplan.name }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">iTEC :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.itec.name }}">{{ exe_config.exe.itec.name }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">Owner :</span>
+                                        <span class="non_editable owner" name="{{ exe_config.exe.owner }}" title="{{ exe_config.exe.owner }}">{{ exe_config.exe.owner }}</span>
+                                    </div>
+                                    <div class="content">
+                                        <span class="title_repeat_item">Worker :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.worker }}">{{ exe_config.exe.worker }}</span>
+                                    </div>
+                                    <div class="content result_box" data-id="{{ exe_config.exe.testplan.id }}" data-category="{{ exe_config.exe.testplan.category.name }}" data-perf="{{ exe_config.exe.testplan.performance }}" data-proj="{{ proj_name }}">
+                                        <span class="title_repeat_item">Result :</span>
+                                        <img class="result_icon" style="cursor: pointer;" src="{{ STATIC_URL }}images/result.png">
+                                    </div>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                            <div class="ui_exe_content">
+                                <div class="sub_header">
+                                    <span>Configuration</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">OS :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.os }}">{{ exe_config.config.os }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">Kernel  :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.kernel }}">{{ exe_config.config.kernel }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">GCC :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.gcc }}">{{ exe_config.config.gcc }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">Target :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.target }}">{{ exe_config.config.target }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">NIC :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.nic }}">{{ exe_config.config.nic }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">TestType :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.test_type }}">{{ exe_config.config.test_type }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">Driver :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.driver }}">{{ exe_config.config.driver }}</span>
+                                </div>
+                                <div class="ui_exe_box">
+                                    <span class="title_repeat_item">Platform :</span>
+                                    <span class="non_editable" title="{{ exe_config.config.platform }}">{{ exe_config.config.platform }}</span>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                            <div class="ui_exe_content">
+                                <div class="sub_header">
+                                    <span>Source</span>
+                                </div>
+                                <div class="content_area">
+                                    <div class="content">
+                                        <span class="title_repeat_item">Package :</span>
+                                        <span class="non_editable" title="{{ exe_config.exe.package }}">{{ exe_config.exe.package }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <br style="clear: both">
+                        </div>
+                        <br style="clear: both">
+                        {% endif %}
+                    </div>
+                </div>
+                {% endifequal %}
+            {% endfor %}
+
+            {% if exe_list|length == 0 %}
+                <div class="ui_detail_nodata">No data for show</div>
+            {% endif %}
+            <div class="ui_operation_area">
+                <div class="ui_paginator_area">
+                    {% if exe_count > entry_num %}
+                    <div class="ui_paginator" id="execution">
+                        {% if exe_list.has_previous %}
+                            <a class="previous" data-page="{{ exe_list.previous_page_number }}"><< Previous</a>
+                        {% endif %}
+                        <span>
+                        {% for p in page_range %}
+                            {% ifequal p exe_list.number %}
+                                <span class="current">{{ p }}</span>
+                            {% else %}
+                                <a class="page" data-page="{{ p }}">{{ p }}</a>
+                            {% endifequal %}
+                        {% endfor %}
+                        </span>
+                        {% if exe_list.has_next %}
+                            <a class="next" data-page="{{ exe_list.next_page_number }}">Next >></a>
+                        {% endif %}
+                    <a class="count">[{{ exe_list.number }}/{{ exe_list.paginator.num_pages }} page]</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# new app tpl #}
+<div class="ui_detail_info ui_new_detail" style="display: none">
+    <div class="ui_detail_header">
+        <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -50px -10px no-repeat;"></div></div>
+        <div class="info">
+            <div style="height: 100%">
+                <span class="title" title="1">ID: None</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui_detail_tab_area">
+        <div class="ui_detail_tab ui_tab_focus" id="tab_0">Overview</div>
+    </div>
+
+    <div class="ui_detail_content_area">
+        {# tab_1: overview detail #}
+        <div class="ui_overview_area">
+            <div class="header">
+                <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+            </div>
+            {# show profile info #}
+            <div class="ui_exe_content">
+                <div class="sub_header profile">
+                    <span data-exe_id="{{ exe_id }}">Profile</span>
+                </div>
+                <div class="content_area">
+                    <div class="content">
+                        <span class="title" >Name :</span>
+                        <input class="name" type="text" >
+                    </div>
+                    <div class="content">
+                        <span class="title">TestPlan:</span>
+                        <input class="plan_name" type="text">
+                        <img class="find_icon" style="cursor: pointer;" src="{{ STATIC_URL }}images/binocular.png">
+                    </div>
+                    <div class="content">
+                        <span class="title">iTEC :</span>
+                        <select class="filter itec_select">
+                        {% if itec_list|length == 1 %}
+                            <option id={{ itec_list.0.id }}>{{ itec_list.0.name }}</option>
+                        {% else %}
+                            <option id="0"></option>
+                            {% for itec in itec_list %}
+                            <option id={{ itec.id }}>{{ itec.name }}</option>
+                            {% endfor %}
+                        {% endif %}
+                        </select>
+                    </div>
+                    <div class="content">
+                        <span class="title">Owner :</span>
+                        <input class="owner ui_input_disabled" type="text" value="{{ user }}" disabled="disabled">
+                    </div>
+                    <div class="content workers">
+                        <span class="title">Worker :</span>
+                        <select class="filter worker_select" data-info="{{ worker_info }}">
+                        {% if worker_list|length == 1 %}
+                            <option selected="selected">{{ worker_list.0 }}</option>
+                        {% else %}
+                            <option></option>
+                            {% for worker in worker_list %}
+                                <option>{{ worker }}</option>
+                            {% endfor %}
+                        {% endif %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <br style="clear: both">
+            {# show configuration #}
+            <div class="ui_exe_content config">
+                <div class="sub_header">
+                    <span>Configuration</span>
+                </div>
+                <div class="ui_exe_box">
+                    <span class="title">OS :</span>
+                    <select class="filter os_select">
+                    {% if os_list|length == 1 %}
+                        <option selected="selected">{{ os_list.0 }}</option>
+                    {% else %}
+                        <option></option>
+                        {% for os in os_list %}
+                        <option>{{ os }}</option>
+                        {% endfor %}
+                    {% endif %}
+                    </select>
+                </div>
+                <div class="ui_exe_box">
+                    <span class="title">Kernel  :</span>
+                    <select class="filter kernel_select">
+                    {% if kernel_list|length == 1 %}
+                        <option selected="selected">{{ kernel_list.0 }}</option>
+                    {% else %}
+                        <option></option>
+                        {% for kernel in kernel_list %}
+                        <option>{{ kernel }}</option>
+                        {% endfor %}
+                    {% endif %}
+                    </select>
+                </div>
+                <div class="ui_exe_box">
+                    <span class="title">GCC :</span>
+                    <select class="filter gcc_select">
+                    {% if gcc_list|length == 1 %}
+                        <option selected="selected">{{ gcc_list.0 }}</option>
+                    {% else %}
+                        <option></option>
+                        {% for gcc in gcc_list %}
+                        <option>{{ gcc }}</option>
+                        {% endfor %}
+                    {% endif %}
+                    </select>
+                </div>
+                <div class="ui_exe_box">
+                    <span class="title">Target :</span>
+                    <select class="filter target_select">
+                    {% if target_list|length == 1 %}
+                        <option selected="selected">{{ target_list.0 }}</option>
+                    {% else %}
+                        <option></option>
+                        {% for target in target_list %}
+                        <option>{{ target }}</option>
+                        {% endfor %}
+                    {% endif %}
+                    </select>
+                </div>
+                <div class="ui_exe_box">
+                    <span class="title">NIC :</span>
+                    <select class="filter nic_select">
+                    {% if nic_list|length == 1 %}
+                        <option selected="selected">{{ nic_list.0 }}</option>
+                    {% else %}
+                        <option></option>
+                        {% for nic in nic_list %}
+                        <option>{{ nic }}</option>
+                        {% endfor %}
+                    {% endif %}
+                    </select>
+                </div>
+                <div class="ui_exe_box">
+                    <span class="title">TestType :</span>
+                    <select class="filter test_type_select">
+                    {% if test_type_list|length == 1 %}
+                        <option selected="selected">{{ test_type_list.0 }}</option>
+                    {% else %}
+                        <option></option>
+                        {% for type in test_type_list %}
+                        <option>{{ type }}</option>
+                        {% endfor %}
+                    {% endif %}
+                    </select>
+                </div>
+                <div class="ui_exe_box">
+                    <span class="title">Driver :</span>
+                    <select class="filter driver_select">
+                    {% if driver_list|length == 1 %}
+                        <option selected="selected">{{ driver_list.0 }}</option>
+                    {% else %}
+                        <option></option>
+                        {% for driver in driver_list %}
+                        <option>{{ driver }}</option>
+                        {% endfor %}
+                    {% endif %}
+                    </select>
+                </div>
+                <div class="ui_exe_box">
+                    <span class="title">Platform :</span>
+                    <select class="filter platform_select">
+                    {% if platform_list|length == 1 %}
+                        <option selected="selected">{{ platform_list.0 }}</option>
+                    {% else %}
+                        <option></option>
+                        {% for platform in platform_list %}
+                        <option>{{ platform }}</option>
+                        {% endfor %}
+                    {% endif %}
+                    </select>
+                </div>
+            </div>
+            <br style="clear: both">
+            {# show Source & schedule#}
+            <div class="ui_exe_content">
+                <div class="sub_header">
+                    <span>Source & Schedule</span>
+                </div>
+                <div class="content_area">
+                    <div class="content">
+                        <span class="title">Environment Type :</span>
+                        <select class="filter repeat_select">
+                            <option id="0"></option>
+                            {% for type in type_list %}
+                            <option id={{ type.id }}>{{ type.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <br style="clear: both">
+                    <div class="repeat" data-email="{{ user.email }}">
+                        <div class="content">
+                            <span class="title">Schedule :</span>
+                            <select class="schedule_select">
+                                <option>Sun</option>
+                                <option>Mon</option>
+                                <option>Tues</option>
+                                <option>Wed</option>
+                                <option>Thur</option>
+                                <option>Fri</option>
+                                <option>Sat</option>
+                            </select>
+                        </div>
+                        <div class="content gitrepo">
+                            <span class="title">Git Repo :</span>
+                            <select class="filter git_repo_select">
+                            {% if gitrepo_list|length == 1 %}
+                                <option selected="selected">{{ gitrepo_list.0 }}</option>
+                            {% else %}
+                                <option></option>
+                                {% for gitrepo in gitrepo_list %}
+                                <option>{{ gitrepo }}</option>
+                                {% endfor %}
+                            {% endif %}
+                            </select>
+                        </div>
+                        <div class="content">
+                            <span class="title">Start Time :</span>
+                            <input class="runtime" type="text" placeholder="hh:mm">
+                        </div>
+                    </div>
+                    <div class="one_time_commit">
+                        <div class="content gitrepo">
+                            <span class="title">Git Repo :</span>
+                            <select class="filter git_repo_select">
+                            {% if gitrepo_list|length == 1 %}
+                                <option selected="selected">{{ gitrepo_list.0 }}</option>
+                            {% else %}
+                                <option></option>
+                                {% for gitrepo in gitrepo_list %}
+                                <option>{{ gitrepo }}</option>
+                                {% endfor %}
+                            {% endif %}
+                            </select>
+                        </div>
+                        <div class="content">
+                            <form method="post" action="/dpdk/executioncenter/executionsetting/" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <span class="title">Patch :</span>
+                                <input class="file_name">
+                                <input class="file_select" id="file_btn" name="patch" type="file">
+                                <img class="patch_icon" style="cursor: pointer;" src="{{ STATIC_URL }}images/project.png">
+                            </form>
+                            <div class="upload_file">
+                                <div class="upload_callback" data-patch_name="{{ patch_name }}" data-status="{{ upload_status }}" data-message="{{ upload_message }}" data-progress="{{ progress }}"></div>
+                            </div>
+                        </div>
+                        <div class="content">
+                            <span class="title">Commit ID :</span>
+                            <input class="commit_id" type="text">
+                        </div>
+                    </div>
+                    <div class="one_time_package">
+                        <div class="content">
+                            <span class="title">Package :</span>
+                            <input class="package" type="text">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br style="clear: both">
+        </div>
+    </div>
+</div>
+
+{# testplan filter tpl #}
+<div class="ui_related_filter_dialog" style=" display: none;
+             height: 380px;
+             background: #fff url('{{ STATIC_URL }}images/peal_top.png') bottom right no-repeat; ">
+
+    <p>TestPlan Filter</p>
+    <hr>
+    <div class="filter_group no_border">
+        <div class="filter_area">
+            <span class="title">Name:</span>
+            <input type="search" class='filter plan_name_search' placeholder="Name"/>
+            <span class="plan_name_search_icon" style="background: url(/static/images/magnify.png) center no-repeat ;width: 20px;height: 20px;float: right;margin-right: 30px;"></span>
+        </div>
+        <div class="filter_area">
+            <span class="title">Category:</span>
+            <select class='filter category_filter' name="category_filter">
+                <option></option>
+                {% for category in category_list %}
+                <option id="{{category.id}}" class="filter_select_option">{{category.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter_area">
+            <span class="title">Performance:</span>
+            <select class="filter perf_filter" name="perf_filter">
+                <option></option>
+                <option>True</option>
+                <option>False</option>
+            </select>
+        </div>
+        <div class="filter_result">
+            {% for testplan in testplan_list %}
+            <div class="ui_testplan_item" data-id="{{ testplan.id }}">{{ testplan.name }}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="btn_area">
+        <button class="ui_filter_dialog_select_btn">Select</button>
+        <button class="ui_filter_dialog_close_btn">Cancel</button>
+    </div>
+</div>

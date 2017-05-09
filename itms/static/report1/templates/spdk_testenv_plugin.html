@@ -1,0 +1,88 @@
+{% addtoblock "css" %}
+    <link href="{{ STATIC_URL }}report/static/css/report.css" rel="stylesheet" type="text/css"/>
+{% endaddtoblock %}
+
+{% addtoblock "js" %}
+    <script type="text/javascript" src="{{ STATIC_URL }}report/static/js/report.js"></script>
+{% endaddtoblock %}
+<div class="ui_table_area">
+    <div class="table_frame">
+        <div class="detail_plugin" data-status='{"status": "{{status}}", "message": "{{message}}"}'>
+{#            <div class="table_header_area">#}
+{#                <div class="ui_table_titel">TestPlan List</div>#}
+{#            </div>#}
+            <div class="detail_area">
+                <div class="ui_dynamic_table dynamic_1">
+                    <table class="ui_table ui_table_out" id="testplan_report_table" cellpadding="0" cellspacing="0" width="100%" border="1">
+                        <thead>
+                        <tr>
+                            <th style="width:19%;">OS</th>
+                            <!--<th style="width:6%;">Start Time</th>
+							<th style="width:10%;">End Time</th>-->
+                            {% if 'performance' in request.path %}
+                            <th style="width:10%;">Plantform</th>
+                            {% endif %}
+                            <th style="width:15%;">Fio_Version</th>
+                            <th style="width:10%;"class="th_center">Kernel_Version</th>
+                            <th style="width:15%;"class="th_center">SPDK_Version</th>
+                            <th style="width:15%;" class="th_center">CPU_Info</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for plan in plan_list %}
+                                <tr data-create_time="{{ plan.create_time|date:'Y-m-d H:i:s' }}" data-start_time="{{plan.start_time | date:'Y-m-d H:i:s'}}" data-end_time="{{ plan.end_time | date:'Y-m-d H:i:s' }}",
+									data-id="{{ plan.id }}" data-name="{{ plan.name }}" data-category="{{ plan.category}}" data-owner="{{ plan.owner }}"
+									data-desc="{{ plan.description }}", data-app-id="{{ plan.app.id }}">
+                                    <td class="td_center"><div title="{{plan.create_time |date:'Y-m-d H:i:s' }}"><span class="time">{{ plan.create_time | date:'Y-m-d H:i:s' }}</span></div></td>
+                                   <!-- <td class="td_center"><div title="{{plan.start_time | date:'Y-m-d H:i:s' }}"><span class="time">{{ plan.start_time | date:'Y-m-d H:i:s'}}</span></div></td>
+                                    <td class="td_center"><div
+									title="{{plan.end_time | date:'Y-m-d
+									H:i:s'}}"><span class="time">{{
+									plan.end_time |date:'Y-m-d H:i:s'
+									}}</span></div></td> -->
+
+                                    <td><div title="{{ plan.id }}"><span class="plan_id">{{ plan.id }}</span></div></td>
+                                    <td><div title="{{ plan.name }}"><span class="name">{{ plan.name }}</span></div></td>
+                                    <td><div title="{{plan.queue_depth.queue_depth }}">{{ plan.queue_depth.queue_depth }}</div></td>
+                                    <td><div title="{{ plan.rw.rw_method }}">{{plan.rw.rw_method }}</div></td>
+                                    <td><div title="{{ plan.owner }}">{{ plan.owner }}</div></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% if plan_list|length == 0 %}
+                        <div class="nodata">No data for show</div>
+                    {% endif %}
+                </div>
+
+                <div class="ui_operation_area">
+                    <div class="ui_paginator_area">
+                        {% if plan_all|length > 6 %}
+                        <div class="ui_paginator">
+							{{plan_list}}
+							{% if plan_list.has_previous %}
+                                <a class="previous" data-page="{{plan_list.previous_page_number}}"><< Previous</a>
+							{% endif %}
+                            <span>
+                            {% for p in page_range %}
+                                {% ifequal p plan_list.number %}
+                                    <span class="current">{{p}}</span>
+                                {% else %}
+                                    <a class="page" data-page="{{p}}">{{p}}</a>
+                                {% endifequal %}
+                            {% endfor %}
+                            </span>
+
+                            {% if plan_list.has_next %}
+                                <a class="next" data-page="{{ plan_list.next_page_number }}">Next >></a>
+                            {% endif %}
+                        <a class="count">[{{ plan_list.number }}/{{ plan_list.paginator.num_pages }} page]</a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

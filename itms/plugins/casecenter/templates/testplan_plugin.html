@@ -1,0 +1,361 @@
+<script type="text/javascript">
+    {% if not auth_flag %}
+        window.location.href = window.location.origin;
+    {% endif %}
+</script>
+<div class="callback_status" data-request-method="{{request.method}}" data-status="{{ status }}" data-message="{{ message }}" style="display: none"></div>
+
+{# tool bar #}
+<div class="ui_edit_area">
+    <div class="ui_edit_left_box">
+        <img class="ui_edit_icon" src="{{ STATIC_URL }}images/settings.png">
+        <button class="ui_edit_type_btn">Edit Category</button>
+    </div>
+    <div class="ui_edit_left_box">
+        <div class="ui_add_icon" style="background: url({{ STATIC_URL }}images/bundle.png) -53px -112px no-repeat;"></div>
+        <button class="ui_add_btn">New TestPlan</button>
+    </div>
+    <div class="ui_edit_left_box">
+        <img class="ui_filter_icon" src="{{ STATIC_URL }}images/subscript_obj.gif">
+        <button class="ui_filter_btn">Filter</button>
+    </div>
+    <div class="ui_edit_left_box" style="border: 0">
+        <input type="search" class='ui_item_name_search' placeholder="Name"/>
+        <span class='ui_item_name_search_icon' data-starter="testplan"></span>
+    </div>
+</div>
+
+{# filter area #}
+<div class="ui_filter_item_area" style="display: none;">
+    <div class="tool">
+        <div class="action ui_cancel_filter" style="background: url({{ STATIC_URL }}images/refresh2.png) center no-repeat"></div>
+        <div class="action ui_filter" data-starter="testplan" style="background: url({{ STATIC_URL }}images/magnify.png) center no-repeat"></div>
+    </div>
+    <div class="ui_filter_item">
+        <div class="header">
+            <div class="header_icon" style="background: url({{ STATIC_URL }}images/paper-clip.png) center no-repeat"></div>
+            <div class="txt">Plan Filter</div>
+        </div>
+        <div class="ui_filter_box">
+            <span class="title">Category:</span>
+            <select class="filter category_filter" name="category_filter">
+                <option></option>
+                {% for category in category_list %}
+                <option id="{{category.id}}" class="filter_select_option">{{category.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="ui_filter_box">
+            <span class="title">Performance:</span>
+            <select class="filter perf_filter" name="perf_filter">
+                <option></option>
+                <option class="filter_select_option">True</option>
+                <option class="filter_select_option">False</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+{# detail area #}
+<div class="ui_detail_area">
+    <div class="detail_frame">
+        <div class="detail_area">
+            {% for plan in plan_list %}
+
+                <div class="ui_list">
+                    <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -15px -17px no-repeat;"></div></div>
+                    <div class="info">
+                        <div style="height: 60%">
+                            <span class="id" title="{{ plan.id }}">ID: {{ plan.id }}</span>
+                            <span class="name" title="{{ plan.name }}">Name: {{ plan.name }}</span>
+                        </div>
+                        <div style="height: 40%">
+                            <span class="attr" title="{{ plan.category }}">Category: {{ plan.category }}</span>
+                            <span class="attr" title="{{ plan.owner }}">Owner: {{ plan.owner }}</span>
+                            <span class="attr" title="{{ plan.performance }}">Performance: {{ plan.performance }}</span>
+                            {% if plan.performance %}
+                                <span class="attr" title="{{ plan.app.name }}">App: {{ plan.app.name }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui_detail_info" data-id="{{ plan.id }}" style="display: none;">
+                    <div class="ui_detail_header">
+                        <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -50px -10px no-repeat;"></div></div>
+                        <div class="info">
+                            <div style="height: 100%">
+                                <span class="title" title="{{ plan.id }}">ID: {{ plan.id }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui_detail_tab_area">
+                        <div class="ui_detail_tab ui_tab_focus" id="tab_0">Overview</div>
+                        <div class="ui_detail_tab" data-related_obj="testsuite"  id="tab_1">Related TestSuite</div>
+                    </div>
+
+                    <div class="ui_detail_content_area">
+                        {# tab_1: overview detail #}
+                        <div class="ui_overview_area">
+                        <div class="header">
+                            <span>Detail</span>
+                            <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                            <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+                        </div>
+                        <div class="content_area">
+                            <div class="content">
+                                <span class="title">Name :</span>
+                                <input class="name" type="text" value="{{ plan.name }}">
+                            </div>
+                            <div class="content">
+                                <span class="title">Start Time :</span>
+                                <input class="start_time time" type="text" value="{{ plan.start_time | date:"Y-m-d H:i:s"}}" placeholder="yyyy-mm-dd hh:mm:ss">
+                            </div>
+                            <div class="content">
+                                <span class="title">Category :</span>
+                                <select class="category_select">
+                                    <option id="0"></option>
+                                    {% for category in category_list %}
+                                        {% ifequal category plan.category %}
+                                            <option id="{{category.id}}" selected="selected">{{category.name}}</option>
+                                        {% else %}
+                                            <option id="{{category.id}}">{{category.name}}</option>
+                                        {% endifequal %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="content">
+                                <span class="title">End Time :</span>
+                                <input class="end_time time" type="text" value="{{ plan.end_time | date:"Y-m-d H:i:s"}}" placeholder="yyyy-mm-dd hh:mm:ss">
+                            </div>
+                            <div class="content">
+                                <span class="title">Create Time :</span>
+                                <input class="create_time time" type="type" value="{{ plan.create_time | date:"Y-m-d H:i:s"}}" placeholder="yyyy-mm-dd hh:mm:ss">
+                            </div>
+                            <div class="content">
+                                <span class="title">Performance :</span>
+                                <span>{{ plan.performance }}</span>
+                            </div>
+                            <div class="content">
+                                <span class="title">Owner :</span>
+                                <span>{{ plan.owner }}</span>
+                            </div>
+
+                            <div class="content">
+                                <span class="title">App :</span>
+                                {% if plan.app %}
+                                    <span>{{ plan.app }}</span>
+                                {% else %}
+                                    <span>None</span>
+                                {% endif %}
+                            </div>
+                            <br style="clear: both">
+                        </div>
+                        <div class="desc_area">
+                            <span>Description :</span>
+                            <textarea class="desc">{{ plan.description }}</textarea>
+                        </div>
+                        <br style="clear: both">
+                        </div>
+                        {# tab_2: related data detail #}
+                        <div class="ui_related_data_area" style="display: none">
+                            <div class="header">
+                                <span class="ui_save" data-starter="save_relation" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            {% if plan_list|length == 0 %}
+                <div class="ui_detail_nodata">No data for show</div>
+            {% endif %}
+
+            <div class="ui_operation_area">
+                <div class="ui_paginator_area">
+                    {% if plan_count > entry_num %}
+                    <div class="ui_paginator" id="plan">
+                        {% if plan_list.has_previous %}
+                            <a class="previous" data-page="{{plan_list.previous_page_number}}"><< Previous</a>
+                        {% endif %}
+
+                        <span>
+                        {% for p in page_range %}
+                            {% ifequal p plan_list.number %}
+                                <span class="current">{{p}}</span>
+                            {% else %}
+                                <a class="page" data-page="{{p}}">{{p}}</a>
+                            {% endifequal %}
+                        {% endfor %}
+                        </span>
+
+                        {% if plan_list.has_next %}
+                            <a class="next" data-page="{{ plan_list.next_page_number }}">Next >></a>
+                        {% endif %}
+                    <a class="count">[{{ plan_list.number }}/{{ plan_list.paginator.num_pages }} page]</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{# new testplan tpl #}
+<div class="ui_detail_info ui_new_detail">
+    <div class="ui_detail_header">
+        <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -50px -10px no-repeat;"></div></div>
+        <div class="info">
+            <div style="height: 100%">
+                <span class="title">ID: None</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui_detail_tab_area">
+        <div class="ui_detail_tab ui_tab_focus" id="tab_0">Overview</div>
+    </div>
+
+    <div class="ui_detail_content_area">
+        {# tab_1: overview detail #}
+        <div class="ui_overview_area">
+        <div class="header">
+            <span>Detail</span>
+            <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+            <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+        </div>
+        <div class="content_area">
+            <div class="content">
+                <span class="title">Name :</span>
+                <input class="name" type="text">
+            </div>
+            <div class="content">
+                <span class="title">Start Time :</span>
+                <input class="start_time time" type="text" placeholder="yyyy-mm-dd hh:mm:ss">
+            </div>
+            <div class="content">
+                <span class="title">Category :</span>
+                <select class="category_select">
+                    <option id="0"></option>
+                    {% for category in category_list %}
+                        <option id="{{category.id}}">{{category.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="content">
+                <span class="title">End Time :</span>
+                <input class="end_time time" type="text" placeholder="yyyy-mm-dd hh:mm:ss">
+            </div>
+            <div class="content">
+                <span class="title">Create Time :</span>
+                <input class="create_time time" type="type" placeholder="yyyy-mm-dd hh:mm:ss">
+            </div>
+            <div class="content">
+                <span class="title">Performance :</span>
+                <select class="perf_select">
+                    <option>False</option>
+                    <option>True</option>
+                </select>
+            </div>
+            <div class="content">
+                <span class="title">Owner :</span>
+                <input class="owner ui_input_disabled" type="text" value="{{ user }}" disabled="disabled">
+            </div>
+
+            <div class="content">
+                <span class="title">App :</span>
+                <select class="app_select ui_select_disabled" disabled="disabled">
+                    <option id="0"></option>
+                    {% for app in app_list %}
+                        <option id="{{app.id}}">{{app.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <br style="clear: both">
+        </div>
+        <div class="desc_area">
+            <span>Description :</span>
+            <textarea class="desc">{{ plan.description }}</textarea>
+        </div>
+        <br style="clear: both">
+        </div>
+    </div>
+</div>
+
+{# related data tpl #}
+<div class="ui_testsuite_related_box_tpl" style="display: none;">
+    <span class="left_box">
+        <div class="tool_bar">
+            <div class="title">
+                <div class="title_icon" style="background: url({{ STATIC_URL }}images/bundle_big.png) -216px -128px no-repeat;"></div>
+                <div class="title_txt">TestSuite</div>
+            </div>
+            <div class="tool">
+                <div class="find_icon" data-plugin="plan" style="background: url({{ STATIC_URL }}images/binocular.png) center no-repeat"></div>
+                <div class="title_check_box" title="select all" style="background: url({{ STATIC_URL }}images/check_all.png) center no-repeat"></div>
+            </div>
+        </div>
+        <div class="data_box">
+          <div class="filer_content" title="Filter: All">Filter: All</div>
+            <div class="data_content">
+                {% for suite in suite_list %}
+                    <div class="ui_related_item" id="{{ suite.id }}">
+                        <label><input type="checkbox"/>{{ suite.name }}</label>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </span>
+    <span class="tooltip">
+        <img class="arrows_r" src="{{ STATIC_URL }}images/arrows_r.png">
+        <img class="arrows_l" src="{{ STATIC_URL }}images/arrows_l.png">
+    </span>
+    <span class="right_box">
+        <div class="tool_bar">
+            <div class="title">
+                <div class="title_icon" style="background: url({{ STATIC_URL }}images/bundle_big.png) -210px -76px no-repeat;"></div>
+                <div class="title_txt">Related TestSuite</div>
+            </div>
+            <div class="tool">
+                <div class="title_check_box" title="select all" style="background: url({{ STATIC_URL }}images/check_all.png) center no-repeat"></div>
+            </div>
+        </div>
+        <div class="data_box">
+            {% for suite in related_suite_list %}
+                <div class="ui_related_item" id="{{ suite.id }}">
+                    <input type="checkbox"/>{{ suite.name }}
+                </div>
+            {% endfor %}
+        </div>
+    </span>
+</div>
+
+{# related data filter tpl #}
+<div class="ui_related_filter_dialog"
+     style=" display: none;
+             height: 220px;
+             background: #fff url('{{ STATIC_URL }}images/peal_top.png') bottom right no-repeat; ">
+
+    <p>Related Data Filter</p>
+    <hr>
+    <div class="filter_group no_border">
+        <div class="filter_area">
+            <span class="title">TestSuite Subsystem:</span>
+            <select class="filter suite_subsystem_related_filter" name="suite_subsystem_related_filter">
+                <option></option>
+                {% for subsystem in subsystem_list %}
+                <option id="{{subsystem.id}}" class="filter_select_option">{{subsystem.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter_area">
+            <span class="title">TestSuite Name:</span>
+            <input type='search' class="filter suite_name_related_filter" />
+        </div>
+    </div>
+    <div class="btn_area">
+        <button class="ui_filter_dialog_close_btn">Cancel</button>
+        <button class="ui_filter_dialog_search_btn">Search</button>
+    </div>
+</div>

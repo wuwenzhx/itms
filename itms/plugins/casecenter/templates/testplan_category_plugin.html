@@ -1,0 +1,27 @@
+<script type="text/javascript">
+    {% if not auth_flag %}
+        window.location.href = window.location.origin;
+    {% endif %}
+</script>
+<div class="type_callback_status" data-request-method="{{request.method}}" data-status="{{ status }}" data-message="{{ message }}" style="display: none"></div>
+
+{# edit subsystem area #}
+<div class="ui_edit_self_attr_area" style="display: none;">
+    <div class="tool">
+        <div class="ui_del action" data-starter="del_self_attr" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat"></div>
+        <div class="ui_save action" data-starter="save_self_attr" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat"></div>
+        <div class="ui_add action" data-starter="add_self_attr" style="background: url({{ STATIC_URL }}images/create.png) center no-repeat"></div>
+    </div>
+    {% for category in category_list %}
+         <div class="edit_self_attr_box">
+             <div class="attr_img"></div>
+            <input type="text" class="attr_name" id="{{ category.id }}" value="{{ category.name }}">
+         </div>
+    {% endfor %}
+</div>
+
+{# item attr tpl #}
+<div class="ui_self_attr_tpl" style="display: none;">
+    <div class="attr_img ui_attr_selected_flag"></div>
+    <input type="text" class="attr_name ui_attr_edit_flag" placeholder="new type" id="0">
+</div>

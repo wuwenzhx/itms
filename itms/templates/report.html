@@ -1,0 +1,29 @@
+{% extends "frame.html" %}
+<link rel="stylesheet" href="{{STATIC_URL}}/css/style.css" media="all" />
+<link href="{{ STATIC_URL }}css/regular_report.css" rel="stylesheet" type="text/css"/>
+{% block base_content %}
+
+
+    <div class="regular_class">
+        <div class="ui_regular">
+            <div class="chart">
+                {% placeholder placeholder_01 %}
+            </div>
+        </div>
+    </div>
+
+
+   <div class="plan_class">
+        <div class="ui_head_area">
+			<div></div>
+            <span class="head_title"> Performance Test Result Filter:</span>
+            <hr>
+		</div>
+        {% placeholder plan_placeholder_02 %}
+    </div>
+
+    <div class="ui_footer">
+        <span class="footer_text">TestReport | © Intel Corporation</span>
+    </div>
+{% endblock %}
+

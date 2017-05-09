@@ -1,0 +1,60 @@
+{% addtoblock "css" %}
+    <link href="{{ STATIC_URL }}report/static/css/report_chart_plugin.css" rel="stylesheet" type="text/css" />
+{% endaddtoblock %}
+
+{% addtoblock "js" %}
+    <script type="text/javascript" src="{{ STATIC_URL }}report/static/js/charts.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL}}report/static/js/dpdk_trend_chart_plugin.js"></script>
+{% endaddtoblock %}
+
+<script type="text/javascript">
+    {% if not auth_flag %}
+        window.location.href = window.location.origin;
+    {% endif %}
+</script>
+
+<div class="chart_area">
+    <div class="title">
+        <span>{{title}}</span>
+    </div>
+
+    <div class="select_area">
+        <div class="select1">
+            <span>Platform:X86</span>
+        </div>
+
+        <div class="select2">
+            <span>OS: Linux</span>
+        </div>
+    </div>
+
+    <div id="chart" class="chart_area">
+        <div id="regular_chart" style="width: {{size.width}}; height: {{size.height}};" data-chart-data = "{{ chart_data }}">
+		
+		
+		</div>
+        <div class="chart_nodata" style="display: none"> No data report !!</div>
+    </div>
+
+    <br style="clear:both;" />
+</div>
+		<td class="memory_info"> <div title="{{commit_info}}"></td>
+		<td class="commit_info"> <div title="{{commit_info}}"></td>
+		<td class="test_command"> <div title="{{commit_info}}"></td>
+		<td class="board_name">board_name<div title="{{commit_info}}"></td>
+		<td class="cpu_info">frame_size=64byte<div title="{{commit_info}}"></td>
+		<td class="memory_info">memory_info<div title="{{commit_info}}"></td>
+		<td class="nic_info">nic_info<div title="{{commit_info}}"></td>
+		<td class="project">commit_info<div title="{{commit_info}}"></td>
+
+			<td class="memory_info">{{chart_data}}<div title="{{commit_info}}"></td>
+		<td class="commit_info"><div title="{{commit_info}}"></td>
+		<td class="test_command"><div title="{{commit_info}}"></td>
+		<td class="board_name"><div title="{{commit_info}}"></td>
+		<td class="cpu_info"><div title="{{commit_info}}"></td>
+		<td class="memory_info"><div title="{{commit_info}}"></td>
+		<td class="nic_info"><div title="{{commit_info}}"></td>
+		<td class="project"><div title="{{commit_info}}"></td>
+
+		
+<div class="option" style="display: none">{{ chartoption|safe }}</div>

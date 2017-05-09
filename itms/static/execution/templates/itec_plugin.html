@@ -1,0 +1,194 @@
+{% addtoblock "js" %}
+    <script type="text/javascript" src="{{ STATIC_URL }}execution/static/js/itec.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}execution/static/js/util.js"></script>
+{% endaddtoblock %}
+
+{% addtoblock "css" %}
+    <link href="{{ STATIC_URL }}execution/static/css/exe.css" rel="stylesheet" type="text/css"/>
+{% endaddtoblock %}
+
+<script type="text/javascript">
+    {% if not auth_flag %}
+        window.location.href = window.location.origin;
+    {% endif %}
+</script>
+
+<div class="callback_status" data-request-method="{{request.method}}" data-status="{{ status }}" data-message="{{ message }}" style="display: none"></div>
+
+{# tool bar #}
+<div class="ui_edit_area">
+    <div class="ui_edit_left_box">
+        <div class="ui_add_icon" style="background: url({{ STATIC_URL }}images/bundle.png) -53px -112px no-repeat;"></div>
+        <button class="ui_add_btn">New iTEC</button>
+    </div>
+    <div class="ui_edit_left_box" style="border: 0">
+        <input type="search" class='ui_item_name_search' placeholder="Name"/>
+        <span class='ui_item_name_search_icon' data-starter="itec"></span>
+    </div>
+</div>
+{# detail area #}
+<div class="ui_detail_area">
+    <div class="detail_frame">
+        <div class="detail_area">
+            {% for itec in itec_list %}
+                <div class="ui_list itec">
+                    <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -15px -17px no-repeat;"></div></div>
+                    <div class="info">
+                        <div style="height: 60%">
+                            <span class="id" title="{{ itec.id }}">ID: {{ itec.id }}</span>
+                            <span class="name" title="{{ itec.name }}">Name: {{ itec.name }}</span>
+                        </div>
+                        <div style="height: 40%">
+                            <span class="attr" title="{{ itec.ip }}">Server IP: {{ itec.ip }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui_detail_info" data-id="{{ itec.id }}" style="display: none;">
+                    <div class="ui_detail_header">
+                        <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -50px -10px no-repeat;"></div></div>
+                        <div class="info">
+                            <div style="height: 100%">
+                                <span class="title" title="{{ itec.id }}">ID: {{ itec.id }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui_detail_tab_area">
+                        <div class="ui_detail_tab ui_tab_focus" id="tab_0">Overview</div>
+                    </div>
+                    <div class="ui_detail_content_area">
+                        {# tab_1: overview detail #}
+                        <div class="ui_overview_area">
+                            <div class="header">
+                                <span>Detail</span>
+                                <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                                <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center center no-repeat;"></span>
+                            </div>
+                            <div class="content_area">
+                                <div class="content">
+                                    <span class="title">Name :</span>
+                                    <input class="itec_name" type="text" value={{ itec.name }}>
+                                </div>
+                                <div class="content" data-ip="{{ itec.ip }}">
+                                    <span class="title">Server IP :</span>
+                                    <input class="itec_ip ui_input_disabled" type="text" readonly="readonly" value={{ itec.ip }}>
+                                </div>
+                                <br style="clear: both">
+                                <br style="clear: both">
+                                <div>
+                                    <div class="worker_area" style="overflow-x: auto;">
+                                        <table class="ui_table ui_table_out " id="detail" data-store="{{ store }}" cellpadding="0" cellspacing="0" width="90%" border="1">
+                                            <thead>
+                                            <tr>
+                                                <th>Worker</th>
+                                                <th>OS</th>
+                                                <th>Kernel</th>
+                                                <th>GCC</th>
+                                                <th>Target</th>
+                                                <th>NIC</th>
+                                                <th>Driver</th>
+                                                <th>Platform</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for worker in worker_detail %}
+                                                <tr>
+                                                    <td><div>{{ worker.name }}</div></td>
+                                                    <td title="{{ worker.os }}"><div>{{ worker.os }}</div></td>
+                                                    <td title="{{ worker.kernel }}"><div>{{ worker.kernel }}</div></td>
+                                                    <td title="{{ worker.gcc }}"><div>{{ worker.gcc }}</div></td>
+                                                    <td title="{{ worker.target }}"><div>{{ worker.target }}</div></td>
+                                                    <td title="{{ worker.nic }}"><div>{{ worker.nic }}</div></td>
+                                                    <td title="{{ worker.driver }}"><div>{{ worker.driver }}</div></td>
+                                                    <td title="{{ worker.platform }}"><div>{{ worker.platform }}</div></td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                        {% if exec_list|length == 0 %}
+                                            <div class="nodata">No data for show</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <br style="clear: both">
+                        <br style="clear: both">
+                    </div>
+                </div>
+            {% endfor %}
+            {% if itec_list|length == 0 %}
+                <div class="ui_detail_nodata">No data for show</div>
+            {% endif %}
+
+            <div class="ui_operation_area">
+                <div class="ui_paginator_area">
+                    {% if itec_count > entry_num %}
+                    <div class="ui_paginator" id="itec">
+                        {% if itec_list.has_previous %}
+                            <a class="previous" data-page="{{itec_list.previous_page_number}}"><< Previous</a>
+                        {% endif %}
+
+                        <span>
+                        {% for p in page_range %}
+                            {% ifequal p itec_list.number %}
+                                <span class="current">{{p}}</span>
+                            {% else %}
+                                <a class="page" data-page="{{p}}">{{p}}</a>
+                            {% endifequal %}
+                        {% endfor %}
+                        </span>
+
+                        {% if itec_list.has_next %}
+                            <a class="next" data-page="{{ itec_list.next_page_number }}">Next >></a>
+                        {% endif %}
+                    <a class="count">[{{ itec_list.number }}/{{ itec_list.paginator.num_pages }} page]</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# new app tpl #}
+<div class="ui_detail_info ui_new_detail" style="display: none">
+    <div class="ui_detail_header">
+        <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -50px -10px no-repeat;"></div></div>
+        <div class="info">
+            <div style="height: 100%">
+                <span class="title" title="1">ID: None</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui_detail_tab_area">
+        <div class="ui_detail_tab ui_tab_focus" id="tab_0">Overview</div>
+    </div>
+
+    <div class="ui_detail_content_area">
+        {# tab_1: overview detail #}
+        <div class="ui_overview_area">
+            <div class="header">
+                <span>Detail</span>
+                <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+            </div>
+            <div class="content_area">
+                <div class="content">
+                    <span class="title">Name :</span>
+                    <input class="itec_name" type="text">
+                </div>
+                <div class="content">
+                    <span class="title">Server IP :</span>
+                    <input class="itec_ip" type="text">
+                </div>
+                <br style="clear: both">
+            </div>
+            <br style="clear: both">
+        </div>
+    </div>
+</div>
+
+

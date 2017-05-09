@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>iTMS · Intel Test Management System.</title>
+    {% render_block "css" %}
+
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/echarts-theme.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/base.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/echarts-all.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.multiselect.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.inputmask.bundle.js"></script>
+
+    <link href="{{ STATIC_URL }}css/common.css" rel="stylesheet" type="text/css"/>
+    <link href="{{ STATIC_URL }}css/jquery-ui.css" rel="stylesheet" type="text/css"/>
+    <link href="{{ STATIC_URL }}css/jquery.multiselect.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+
+<div style="display:none">{% csrf_token %}
+    <input type="hidden" name="csrfmiddlewaretoken" value="$csrf_token"/>
+</div>
+
+<div class="ui_black_background"></div>
+<div class="ui_loader_area">
+    <img class="ui_loader" src="{{ STATIC_URL }}images/ajax-loader1.gif">
+</div>
+<div class="ui_confirm_alert" style="display: none;">
+    <div class="ui_alert_box ui_confirm_box">
+        <img src="{{ STATIC_URL }}images/warning.png">
+        <p class="alert_content"></p>
+        <button class="ui_no">No</button>
+        <button class="ui_yes">Yes</button>
+    </div>
+</div>
+<div class="ui_error_alert" style="display: none;">
+    <div class="ui_alert_box ui_error_box">
+        <img src="{{ STATIC_URL }}images/warning.png">
+        <p class="alert_content">Are you sure you want to delete it ?</p>
+        <button class="ui_ok">OK</button>
+    </div>
+</div>
+
+{% block page_header %}
+{% endblock %}
+
+{% block page_bodyer %}
+{% endblock %}
+
+{% block page_footer %}
+{% endblock %}
+
+{% addtoblock "js" %}
+{% endaddtoblock %}
+
+{% render_block "js" %}
+
+</body>
+</html>

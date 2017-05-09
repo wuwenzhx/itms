@@ -1,0 +1,327 @@
+.exe_class,
+.itec_class{
+    height: 95%;
+    width: 100%;
+    overflow-y: auto;
+    color: #636363;
+}
+.repeat {
+    display: none;
+}
+
+.ui-multiselect span {
+    font-size: 12px !important;
+    color: #636363;
+    font-weight: normal;
+    margin:3px 0px;
+    height: 16px;
+}
+.ui-multiselect {
+    border-radius: 2px !important;
+    padding: 0 2px 2px 15px !important;
+    background: none !important;
+    height: 23px;
+    width: 50% !important;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space:nowrap;
+}
+
+.ui-multiselect-menu {
+    width: 18% !important;
+    min-width: 185px;
+}
+
+.ui_overview_area .repeat_area,
+.ui_overview_area .source_area{
+    float: left;
+    width: 50%;
+}
+.ui_overview_area .repeat_area .content,
+.ui_overview_area .source_area .content {
+    width: 100%;
+    height: 40px;
+    float: left;
+}
+.file_select {
+    display: none;
+    /*border: 0px !important;*/
+    opacity:0;
+}
+.ui_related_filter_dialog,
+.ui_related_filter_dialog_2 {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    width: 450px;
+    padding: 10px;
+    /*height: 350px;*/
+    background-color: #fff;
+    border: 1px solid #cdcdcd;
+    border-radius: 4px;
+    z-index: 99;
+}
+.ui_related_filter_dialog p,
+.ui_related_filter_dialog_2 p {
+    width: 100%;
+    text-align: center;
+    color: black;
+    font-size: 18px;
+}
+.ui_related_filter_dialog .title,
+.ui_related_filter_dialog_2 .title {
+    display: inline-block;
+    width: 200px;
+    text-indent: 30px;
+    float: left;
+}
+.ui_related_filter_dialog .filter,
+.ui_related_filter_dialog_2 .filter {
+    padding: 2px;
+    width: 200px;
+}
+.ui_related_filter_dialog .filter_group,
+.ui_related_filter_dialog_2 .filter_group {
+    border-bottom: 1px dotted #cdcdcd;
+    padding: 15px 0;
+    height: auto;
+}
+.ui_related_filter_dialog .filter_area,
+.ui_related_filter_dialog_2 .filter_area {
+    height: 30px;
+}
+.ui_related_filter_dialog .filter_result,
+.ui_related_filter_dialog_2 .filter_result {
+    width: 370px;
+    height: 150px;
+    margin-left:30px;
+    overflow-y: scroll;
+    border: 2px solid #c0c0c0;
+    text-indent: 10px;
+}
+.no_border {
+    border: 0 !important;
+}
+.ui_related_filter_dialog .btn_area,
+.ui_related_filter_dialog_2 .btn_area {
+    margin-top: 15px;
+    height: 30px;
+    width: 100%;
+    text-align: center;
+}
+.ui_related_filter_dialog .btn_area button,
+.ui_related_filter_dialog_2 .btn_area button {
+    margin: 0 5px;
+    padding: 4px 20px;
+    color: #fff;
+    background-color: #00aeef;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.15);
+    border: none;
+    border-radius: 2px;
+}
+.ui_testplan_item:hover {
+    background-color: #A8B8D1;
+    color: #fff;
+}
+.ui_selected_testplan {
+    background-color: bisque;
+}
+.ui_selected_file {
+    background-color: bisque;
+}
+
+.ui_list .info .exe_attr {
+    display: inline-block;
+    padding: 0 10px;
+    font-size: 14px;
+    border-right: 1px solid #cdcdcd;
+    color: #B3B3B3;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space:nowrap;
+    max-width: 300px;
+}
+.ui_exe_overflow {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space:nowrap;
+}
+
+.ui_exe_box {
+    width: 33%;
+    height: 40px;
+    display: inline-block;
+    float: left;
+}
+.ui_exe_box .title {
+    display: inline-block;
+    width: 100px;
+    text-indent: 15px;
+    margin-left: 5%;
+    font-size: 15px;
+}
+
+.ui_exe_box select {
+    height: 24px;
+    width: 50%;
+    border: 1px solid #c0c0c0;
+    text-indent: 10px;
+    color: #555;
+    border-radius: 2px;
+}
+.ui_exe_box input {
+    height: 19px;
+    width: 225px;
+    border: 1px solid #c0c0c0;
+    text-indent: 15px;
+    color: #555;
+    border-radius: 2px;
+    margin-left: 5%;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.ui_exe_box input[type=file] {
+    opacity:0;
+    filter:alpha(opacity=0);
+    height: 95px;
+    width: 100px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 9;
+}
+
+.ui_exe_box .title_repeat_item {
+    display: inline-block;
+    width: 100px;
+    text-indent: 15px;
+    margin-left: 5%;
+    font-size: 15px;
+    font-weight: bold;
+    vertical-align:middle;
+}
+
+.ui_exe_box .non_editable {
+    display: inline-block;
+    min-width: 100px;
+    text-align: left;
+    width: 50%;
+    font-size: 15px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space:nowrap;
+    vertical-align:middle;
+}
+.ui_overview_area .ui_exe_content .content .title {
+    width: 150px;
+    text-indent: 15px;
+    margin-left: 3%;
+    float: left;
+    display: block;
+}
+.ui_overview_area .ui_exe_content .content .title_repeat_item {
+    display: inline-block;
+    width: 150px;
+    text-indent: 15px;
+    margin-left: 3%;
+    font-weight: bold;
+    font-size: 15px;
+    vertical-align:middle;
+}
+.ui_overview_area .ui_exe_content .content .non_editable {
+    display: inline-block;
+    min-width: 100px;
+    text-align: left;
+    width: 50%;
+    font-size: 15px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space:nowrap;
+    vertical-align:middle;
+}
+.ui_overview_area .ui_exe_content .profile {
+    border-top-style: hidden;
+}
+.ui_icon_disabled {
+    cursor: not-allowed !important;
+}
+.file {
+    position: relative;
+    display: inline-block;
+    background: #D0EEFF;
+    border: 1px solid #99D3F5;
+    border-radius: 4px;
+    padding: 4px 12px;
+    overflow: hidden;
+    color: #1E88C7;
+    text-decoration: none;
+    text-indent: 0;
+    line-height: 20px;
+}
+.file input {
+    position: absolute;
+    font-size: 100px;
+    right: 0;
+    top: 0;
+    opacity: 0;
+}
+.file:hover {
+    background: #AADFFD;
+    border-color: #78C3F3;
+    color: #004974;
+    text-decoration: none;
+}
+.worker_area {
+    overflow-x: auto;
+    width: 90%;
+    margin-left: 5%;
+}
+.worker_area .ui_table th {
+    color: #707070;
+    background: #efefef;
+    font-size: 13px;
+}
+.worker_area .ui_table thead th {
+    border-color: white;
+    border-top-style: hidden;
+    border-bottom-style: hidden;
+}
+.worker_area .ui_table tbody tr {
+     border-bottom-style: hidden;
+}
+.title_repeat_item {
+    display: inline-block;
+    width: 100px;
+    text-indent: 15px;
+    margin-left: 5%;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.non_editable {
+    display: inline-block;
+    min-width: 100px;
+    text-align: left;
+    width: 50%;
+    font-size: 15px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space:nowrap;
+}
+
+.video_selection {
+    height: 30px;
+    z-index: 2;
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: #fefefe;
+}
+.video {
+    position: relative;
+    width: 50%;
+}

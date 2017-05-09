@@ -1,0 +1,166 @@
+.plan_class {
+    height: 95%;
+    width: 100%;
+    color: #636363;
+    overflow-y: auto;
+}
+.select_area {
+    width: 100%;
+    height: 60%;
+}
+/*.select_area .select_1*/
+.select_area .select_4{
+    float: left;
+    height: 60%;
+    padding: 5px 0 5px 10px;
+    text-align: left;
+    width: calc(100% - 260px - 230px - 9px);
+}
+/*.select_area .select_2 {
+    float: left;
+    height: 60%;
+    padding: 5px 0 5px 10px;
+    text-align: left;
+    width: calc(100% - 260px - 230px - 9px);
+}*/
+.select_area span {
+    margin-right: 10px;
+    color: gray;
+    font-size: 15px;
+}
+.select_area input {
+    border: 1px solid #aaa;
+    margin: 0;
+    outline: none;
+    border-radius: 4px 0 0 4px;
+    padding: 3px 4px;
+    width: 150px;
+}
+.select_area input_create_time {
+    border: 1px solid #aaa;
+    margin: 0;
+    outline: none;
+    border-radius: 4px 0 0 4px;
+    padding: 3px 4px;
+    width: 150px;
+}
+
+.select_area select {
+    width: 160px;
+    padding: 2px;
+    height: 23px;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+.ui_operation_area {
+    width: 100%;
+    height: 80px;
+    line-height: 80px;
+}
+
+.ui_select_area {
+    margin-bottom: 8px;
+}
+
+.ui_select_area .footer {
+    width: 100%;
+    height: 40%;
+    text-align: center;
+}
+
+.ui_select_area .search {
+    display: block;
+    width: 90px;
+    height: 26px;
+    border: 1px solid #00AEEF;
+    border-radius: 26px;
+    text-align: center;
+    line-height: 1px;
+    color: #00AEEF;
+    background-color: white;
+    cursor: pointer;
+    margin: auto;
+}
+table .name:hover {
+  cursor: pointer;
+  color: #00AEEF;
+}
+table .name {
+  text-decoration: underline;
+}
+table .time {
+  text-decoration: underline;
+}
+.name_filter {
+   	position: relative;
+    height: 21px;
+    width: 28px;
+    border: 1px solid #aaa;
+    border-left: 0;
+    cursor: pointer;
+    display: block;
+    border-radius: 0 4px 4px 0;
+    border-left: 0;
+    background-color: #f6f6f6;
+}
+/*.select_area .select_3 {
+    float: left;
+    height: 60%;
+    padding: 5px 0 5px 10px;
+    text-align: left;
+    width: calc(100% - 260px - 230px - 9px);
+}*/
+.name_filter img {
+    position: relative;
+    left: 8px;
+    top: 3px;
+}
+.create_time_filter img{
+	/*position: relative;*/
+	left: 1px;
+	top: 1px;
+}
+.end_time_filter img{
+	position: relative;
+	left: 8px;
+	top: 3px;
+}
+.nic_name_filter{
+	width:100px;
+	height:22px;
+	padding:0px;
+}
+.case_type_filter{
+	width:100px;
+	height:22px;
+	padding:0px;
+	
+}
+.device_id_filter{
+	width:100px;
+	height:22px;
+	padding:0px;
+}
+.firmware_filter{
+	width:100px;
+	height:22px;
+	padding:0px;
+}
+.cpu_type_filter{
+	width:100px;
+	height:22px;
+	padding:0px;
+}
+/*.select_6{
+	display:inline
+} */
+.select_1{
+	display:inline
+}
+.select_4{
+	display:inline
+}
+.select_5{
+	display:inline
+}

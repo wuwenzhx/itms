@@ -1,0 +1,191 @@
+.ui_header {
+    min-width: 650px;
+}
+.ui_bodyer {
+    background-color: #0f5fa7;
+}
+.main_area {
+    width: 80%;
+    height: 100%;
+    margin: auto;
+    text-align: center;
+}
+.login {
+    display: inline-block;
+    width: 92px;
+    color: white;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    cursor: pointer;
+}
+.login > .login_img {
+    display: inline-block;
+    position: relative;
+    top: 4px;
+    left: 2px;
+    width: 17px;
+    height: 17px;
+    background: url(../images/logout1.png) no-repeat;
+}
+.login_dialog {
+    position: fixed;
+    width: 400px;
+/*    height: 190px;*/
+    top: 68px;
+    right: 215px;
+    background-color: white;
+    z-index: 1000;
+    padding: 5px 0;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0,0,0,0.175);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.175);
+    background-clip: padding-box;
+
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    -khtml-user-select: none;
+    user-select: none;
+}
+.login_area {
+    padding: 20px 15px;
+    color: #555;
+    font-family: "intel clear", "tahoma", Helvetica, "helvetica", Arial, sans-serif;
+    font-weight: 200;
+}
+.login_area .titel {
+    font-size: 25px;
+}
+.login_area .select_title {
+    display: block;
+/*    font-size: 18px;
+    color: #00aeef;*/
+    margin: 10px 0;
+}
+.login_area select {
+    width: 200px;
+    height: 30px;
+    padding: 4px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    color: #555;
+}
+.login_area button {
+    display: block;
+    margin-top: 10px;
+    font-weight: normal;
+    cursor: pointer;
+    background-color: #00aeef;
+    border: 1px solid transparent;
+    white-space: normal;
+    padding: 4px 20px;
+    font-size: 14px;
+    border-radius: 4px;
+    color: white;
+    border-radius: 2px;
+    box-shadow: 2px 2px 1px #000;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.15);
+    border-width: 0;
+    white-space: normal;
+}
+
+.login:hover, .home:hover {
+    cursor: pointer;
+}
+.login:hover .login_text {
+    color: #9addf7;
+}
+.login:hover .login_img {
+    background: url(../images/logout2.png) no-repeat;
+}
+.project_select {
+    border: 1px solid #c0c0c0;
+    width: 200px;
+    height: 28px;
+    line-height: 28px;
+    cursor: pointer;
+}
+.project_select .select_txt {
+    display: inline-block;
+    width: 180px;
+    height: 28px;
+    text-indent: 20px;
+}
+.project_select img {
+    float: right;
+    position: relative;
+    top: 11px;
+    right: 5px;
+}
+.project_list {
+    position: absolute;
+    z-index: 5px;
+    background-color: #fff;
+    margin: 0;
+    margin: auto;
+    width: 200px;
+    border: 1px solid #c0c0c0;
+    list-style-type: none;
+    padding: 0;
+    border-top: 0px;
+    box-shadow: 0px 0px 2px rgba(0, 102, 254, 1);
+}
+.project_list li a {
+    display: block;
+    width: 100%;
+    text-decoration: none;
+    outline: none;
+    text-indent: 20px;
+    color: #383838;
+}
+.project_list li a:hover {
+    color: #fff;
+    background-color: #0099FF;
+}
+.username{
+    border: 1px solid #dddddd;
+    padding: 6px 12px;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+    margin: 5px 0;
+    border-radius: 2px;
+    display: block;
+    width: 200px;
+}
+.password {
+    border: 1px solid #dddddd;
+    padding: 6px 12px;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+    margin: 3px 0;
+    border-radius: 2px;
+    width: 200px;
+    display: block;
+}
+.login_title {
+    display: inline-block;
+    padding: 12px 0;
+}
+.login_error {
+    width: 80%;
+    background: #f3f3f3;
+    border: 1px solid #ebebeb;
+    color: red;
+    padding: 10px;
+    margin: 5px 0 15px 0;
+    border-radius: 2px;
+}
+.project_title {
+    font-size: 20px;
+    color: #00aeef;
+}
+.project_null {
+    width: 80%;
+    background: #f3f3f3;
+    border: 1px solid #ebebeb;
+    color: red;
+    padding: 10px;
+    margin: 12px 0 5px 0;
+    border-radius: 2px;
+}

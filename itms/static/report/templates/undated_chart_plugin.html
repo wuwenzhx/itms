@@ -1,0 +1,29 @@
+{% addtoblock "css" %}
+    <link href="{{ STATIC_URL }}report/static/css/report_chart_plugin.css" rel="stylesheet" type="text/css" />
+{% endaddtoblock %}
+
+{% addtoblock "js" %}
+    <script type="text/javascript" src="{{ STATIC_URL }}report/static/js/charts.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}report/static/js/undated_chart_plugin.js"></script>
+{% endaddtoblock %}
+
+<script type="text/javascript">
+    {% if not auth_flag %}
+        window.location.href = window.location.origin;
+    {% endif %}
+</script>
+
+<div class="chart_area">
+    <div class="title">
+        <span>{{title}}</span>
+    </div>
+
+    <div id="undated_chart" class="undated_chart" data-chart-data="{{ chart_data }}" style="height: {{size.height}}; width: {{size.width}};"></div>
+    <div class="chart_nodata" style="display: none"> No data report !!</div>
+    <br style="clear:both;" />
+</div>
+
+<div class="option" style="display: none">{{ chartoption|safe }}</div>
+
+
+

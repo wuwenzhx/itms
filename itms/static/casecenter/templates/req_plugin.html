@@ -1,0 +1,324 @@
+<script type="text/javascript">
+    {% if not auth_flag %}
+        window.location.href = window.location.origin;
+    {% endif %}
+</script>
+<div class="callback_status" data-request-method="{{request.method}}" data-status="{{ status }}" data-message="{{ message }}" style="display: none"></div>
+
+{# tool bar #}
+<div class="ui_edit_area">
+    <div class="ui_edit_left_box">
+        <img class="ui_edit_icon" src="{{ STATIC_URL }}images/settings.png">
+        <button class="ui_edit_type_btn">Edit Type</button>
+    </div>
+    <div class="ui_edit_left_box">
+        <div class="ui_add_icon" style="background: url({{ STATIC_URL }}images/bundle.png) -53px -112px no-repeat;"></div>
+        <button class="ui_add_btn">New Requirement</button>
+    </div>
+    <div class="ui_edit_left_box">
+        <img class="ui_filter_icon" src="{{ STATIC_URL }}images/subscript_obj.gif">
+        <button class="ui_filter_btn">Filter</button>
+    </div>
+    <div class="ui_edit_left_box" style="border: 0">
+        <input type="search" class='ui_item_name_search' placeholder="Name"/>
+        <span class='ui_item_name_search_icon' data-starter="requirement"></span>
+    </div>
+</div>
+
+{# filter area #}
+<div class="ui_filter_item_area" style="display: none;">
+    <div class="tool">
+        <div class="action ui_cancel_filter" style="background: url({{ STATIC_URL }}images/refresh2.png) center no-repeat"></div>
+        <div class="action ui_filter" data-starter="requirement" style="background: url({{ STATIC_URL }}images/magnify.png) center no-repeat"></div>
+    </div>
+    <div class="ui_filter_item">
+        <div class="header">
+            <div class="header_icon" style="background: url({{ STATIC_URL }}images/paper-clip.png) center no-repeat"></div>
+            <div class="txt">Requirement Filter</div>
+        </div>
+        <div class="ui_filter_box">
+            <span class="title">Requirement Type:</span>
+            <select class="filter req_type_filter" name="req_type_filter">
+                <option id="0"></option>
+                {% for type in type_list %}
+                <option id="{{type.id}}" class="filter_select_option">{{type.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+</div>
+
+{# detail area #}
+<div class="ui_detail_area">
+    <div class="detail_frame">
+        <div class="detail_area">
+            {% for req in req_list %}
+
+                <div class="ui_list">
+                    <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -15px -17px no-repeat;"></div></div>
+                    <div class="info">
+                        <div style="height: 60%">
+                            <span class="id" title="{{ req.id }}">ID: {{ req.id }}</span>
+                            <span class="name">Name: {{ req.name }}</span>
+                        </div>
+                        <div style="height: 40%">
+                            <span class="attr" title="{{ req.type }}">Type: {{ req.type }}</span>
+                            <span class="attr" title="{{ req.owner }}">Owner: {{ req.owner }}</span>
+                            <span class="attr" title="{{ req.create_time | date:'Y-m-d H:i:s' }}">Create Time: {{ req.create_time | date:'Y-m-d H:i:s' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui_detail_info" data-id="{{ req.id }}" style="display: none">
+                    <div class="ui_detail_header">
+                        <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -50px -10px no-repeat;"></div></div>
+                        <div class="info">
+                            <div style="height: 100%">
+                                <span class="title" title="{{ req.id }}">ID: {{ req.id }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui_detail_tab_area">
+                        <span class="ui_detail_tab ui_tab_focus" id="tab_0">Overview</span>
+                        <div class="ui_detail_tab" id="tab_1" data-related_obj="feature">Related Feature</div>
+                    </div>
+                    <div class="ui_detail_content_area">
+                        {# tab_1: overview detail #}
+                        <div class="ui_overview_area">
+                            <div class="header">
+                                <span>Detail</span>
+                                <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                                <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+                            </div>
+                            <div class="content_area">
+                                <div class="content">
+                                    <span class="title">Name :</span>
+                                    <input class="name" type="text" value="{{ req.name }}">
+                                </div>
+                                <div class="content">
+                                    <span class="title">Owner :</span>
+                                    <span>{{ req.owner }}</span>
+                                </div>
+                                <div class="content">
+                                    <span class="title">Create Time :</span>
+                                    <input class="create_time time" type="text" value="{{ req.create_time | date:'Y-m-d H:i:s' }}" placeholder="yyyy-mm-dd hh:mm:ss">
+                                </div>
+                                <div class="content">
+                                    <span class="title">Type :</span>
+                                    <select class="type_select">
+                                        <option id="0"></option>
+                                        {% for type in type_list %}
+                                            {% ifequal type req.type %}
+                                                <option id="{{type.id}}" selected="selected">{{type.name}}</option>
+                                            {% else %}
+                                                <option id="{{type.id}}">{{type.name}}</option>
+                                            {% endifequal %}
+
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <br style="clear: both">
+                            </div>
+                            <div class="desc_area">
+                                <span>Description :</span>
+                                <textarea class="desc">{{ req.description }}</textarea>
+                            </div>
+                            <br style="clear: both">
+                        </div>
+
+                        {# tab_2: related data detail #}
+                        <div class="ui_related_data_area" style="display: none">
+                            <div class="header">
+                                <span class="ui_save" data-starter="save_relation" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            {% if req_count == 0 %}
+                <div class="ui_detail_nodata">No data for show</div>
+            {% endif %}
+
+            <div class="ui_operation_area" id="requirement">
+                <div class="ui_paginator_area">
+                    {% if req_count > entry_num %}
+                    <div class="ui_paginator" id="req">
+                        {% if req_list.has_previous %}
+                            <a class="previous" data-page="{{req_list.previous_page_number}}"><< Previous</a>
+                        {% endif %}
+
+                        <span>
+                        {% for p in page_range %}
+                            {% ifequal p req_list.number %}
+                                <span class="current">{{p}}</span>
+                            {% else %}
+                                <a class="page" data-page="{{p}}">{{p}}</a>
+                            {% endifequal %}
+                        {% endfor %}
+                        </span>
+
+                        {% if req_list.has_next %}
+                            <a class="next" data-page="{{ req_list.next_page_number }}">Next >></a>
+                        {% endif %}
+                    <a class="count">[{{ req_list.number }}/{{ req_list.paginator.num_pages }} page]</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# new testcase tpl #}
+<div class="ui_detail_info ui_new_detail" style="display: none">
+    <div class="ui_detail_header">
+        <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -50px -10px no-repeat;"></div></div>
+        <div class="info">
+            <div style="height: 100%">
+                <span class="title">ID: None</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui_detail_tab_area">
+        <div class="ui_detail_tab ui_tab_focus" id="tab_0">Overview</div>
+    </div>
+    <div class="ui_detail_content_area">
+        {# tab_1: overview detail #}
+        <div class="ui_overview_area">
+            <div class="header">
+                <span>Detail</span>
+                <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+            </div>
+            <div class="content_area">
+                <div class="content">
+                    <span class="title">Name :</span>
+                    <input class="name" type="text">
+                </div>
+                <div class="content">
+                    <span class="title">Owner :</span>
+                    <input class="owner ui_input_disabled" type="text" value="{{ user }}" disabled="disabled">
+                </div>
+                <div class="content">
+                    <span class="title">Create Time :</span>
+                    <input class="create_time time" type="text" placeholder="yyyy-mm-dd hh:mm:ss">
+                </div>
+                <div class="content">
+                    <span class="title">Type :</span>
+                    <select class="type_select">
+                        <option id="0"></option>
+                        {% for type in type_list %}
+                            <option id="{{type.id}}">{{type.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <br style="clear: both">
+            </div>
+            <div class="desc_area">
+                <span>Description :</span>
+                <textarea class="desc"></textarea>
+            </div>
+            <br style="clear: both">
+        </div>
+    </div>
+</div>
+
+{# related data tpl #}
+<div class="ui_feature_related_box_tpl" style="display: none;">
+    <span class="left_box">
+        <div class="tool_bar">
+            <div class="title">
+                <div class="title_icon" style="background: url({{ STATIC_URL }}images/bundle_big.png) -216px -128px no-repeat;"></div>
+                <div class="title_txt">Feature</div>
+            </div>
+            <div class="tool">
+                <div class="find_icon" data-plugin="req" style="background: url({{ STATIC_URL }}images/binocular.png) center no-repeat"></div>
+                <div class="title_check_box" title="select all" style="background: url({{ STATIC_URL }}images/check_all.png) center no-repeat"></div>
+            </div>
+        </div>
+        <div class="data_box">
+            <div class="filer_content" title="Filter: All">Filter: All</div>
+            <div class="data_content">
+                {% for fea in fea_list %}
+                    <div class="ui_related_item" id="{{ fea.id }}">
+                        <input type="checkbox"/>{{ fea.name }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </span>
+    <span class="tooltip">
+        <img class="arrows_r" src="{{ STATIC_URL }}images/arrows_r.png">
+        <img class="arrows_l" src="{{ STATIC_URL }}images/arrows_l.png">
+    </span>
+    <span class="right_box">
+        <div class="tool_bar">
+            <div class="title">
+                <div class="title_icon" style="background: url({{ STATIC_URL }}images/bundle_big.png) -210px -76px no-repeat;"></div>
+                <div class="title_txt">Related Feature</div>
+            </div>
+            <div class="tool">
+                <div class="title_check_box" title="select all" style="background: url({{ STATIC_URL }}images/check_all.png) center no-repeat"></div>
+            </div>
+        </div>
+        <div class="data_box">
+            {% for fea in related_fea_list %}
+                <div class="ui_related_item" id="{{ fea.id }}">
+                    <input type="checkbox"/>{{ fea.name }}
+                </div>
+            {% endfor %}
+        </div>
+    </span>
+
+</div>
+
+{# related data filter tpl #}
+<div class="ui_related_filter_dialog"
+     style=" display: none;
+             height: 300px;
+             background: #fff url('{{ STATIC_URL }}images/peal_top.png') bottom right no-repeat; ">
+
+    <p>Related Data Filter</p>
+    <hr>
+    <div class="filter_group">
+        <div class="filter_area">
+            <span class="title">Requirement Type:</span>
+            <select class="filter req_type_related_filter" name="req_type_related_filter">
+                <option></option>
+                {% for type in type_list %}
+                <option id="{{type.id}}" class="filter_select_option">{{type.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter_area">
+            <span class="title">Requirement:</span>
+            <select class="filter req_related_filter" name="req_related_filter">
+                <option></option>
+                {% for req in req_all_origin %}
+                <option id="{{req.id}}" class="filter_select_option">{{req.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="filter_group no_border">
+        <div class="filter_area">
+            <span class="title">Feature Component:</span>
+            <select class="filter fea_component_related_filter" name="fea_component_related_filter">
+                <option></option>
+                {% for component in fea_component_list %}
+                <option id="{{component.id}}" class="filter_select_option">{{component.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter_area">
+            <span class="title">Feature Name:</span>
+            <input type='search' class="filter fea_name_related_filter" />
+        </div>
+    </div>
+    <div class="btn_area">
+        <button class="ui_filter_dialog_close_btn">Cancel</button>
+        <button class="ui_filter_dialog_search_btn">Search</button>
+    </div>
+</div>

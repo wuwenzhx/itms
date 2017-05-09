@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block page_header %}
+
+    {% addtoblock "css" %}
+        <link href="{{ STATIC_URL }}css/frame.css" rel="stylesheet" type="text/css"/>
+		<link rel="stylesheet" href="STATIC_URL/css/style.css" media="all" />
+		<link href="{{ STATIC_URL }}css/regular_report.css" rel="stylesheet" type="text/css"/>
+    {% endaddtoblock %}
+
+    {% addtoblock "js" %}
+        <script type="text/javascript" src="{{ STATIC_URL }}js/base.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}js/frame.js"></script>
+    {% endaddtoblock %}
+
+    <div class="ui_header">
+        <div class="ui_header_left">
+            <div class="nav_2"></div>
+            <div class="nav_3">TestReport</div>
+            <div class="nav_5"></div>
+            <div class="nav_4">
+                <span class="logout">
+                    <span class="logout_text">Logout</span>
+                    <span class="logout_img"></span>
+                </span>
+                <span class="h_line"></span>
+                <span class="help">
+                    <span class="help_text">Help</span>
+                    <span class="help_icon">?</span>
+                </span>
+
+            </div>
+            <div class="nav_6">
+                <div class="user_icon" style="background: url({{ STATIC_URL }}images/user.png) center no-repeat"></div>
+                <div class="user_name">{{ user }}</div>
+            </div>
+
+
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block page_bodyer %}
+    <div class="ui_bodyer" style="display: none">
+		<div class="ui_navigation">
+			<div class="ui_project">
+                <span class="project_img"></span>
+                <label class="project_name"></label>
+            </div>
+			<div class="ui_menu">
+                <ul class="ui_navigation_list">
+                    {% load menu_tags %}{% show_sub_menu 100 1 %}
+                </ul>
+            </div>
+	</div> 
+
+	<link rel="stylesheet" href="{{STATIC_URL}}/css/style.css" media="all" />
+	<!--<nav>
+		<ul> 
+			<li><a href="../../../../admin"><span class="icon">&#128101;</span>Django Admin <span class="pip">3</span></a></li>
+			<li><a href="result1/?preview=1"><span class="icon">&#128202;</span> Statistics</a></li>
+			<li>
+			<a href="result/?preview=1"><span class="icon">&#9881;</span> UI Elements</a>
+			<ul class="submenu">
+				<li><a href="icon-fonts.html">Icon fonts<li/a></li>
+				</ul>
+				</li>
+			</ul> 
+		</nav>-->
+        <div class="ui_content_base">
+            <div class="ui_content">
+                {% block base_content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

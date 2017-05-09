@@ -1,0 +1,100 @@
+{% addtoblock "css" %}
+    <link href="{{ STATIC_URL }}css/frame.css" rel="stylesheet" type="text/css"/>
+    <link href="{{ STATIC_URL }}css/index.css" rel="stylesheet" type="text/css"/>
+{% endaddtoblock %}
+
+{% addtoblock "js" %}
+    <script type="text/javascript" src="{{ STATIC_URL }}index/static/js/index.js"></script>
+{% endaddtoblock %}
+
+
+<div class="ui_header">
+    <div class="ui_header_left">
+        <div class="nav_2"></div>
+        <div class="nav_3">TestReport</div>
+        <div class="nav_5"></div>
+        <div class="nav_4">
+            <span class="login">
+                <span class="login_text">Login</span>
+                <span class="login_img"></span>
+            </span>
+            <span class="h_line"></span>
+            <span class="help">
+                <span class="help_text">Help</span>
+                <span class="help_icon">?</span>
+            </span>
+        </div>
+    </div>
+</div>
+<div class="ui_bodyer">
+    <div class="main_area">
+        <!-- <img class="home_image" src="{{ STATIC_URL }}images/main.page.1280.720.png"> -->
+        <img class="home_image" src="{{ STATIC_URL }}images/main.page.864.486.png" alt=""
+          srcset="{{ STATIC_URL }}images/main.page.1280.720.png 2000w 720h,
+                           {{ STATIC_URL }}images/main.page.864.486.png 1200w 486h,
+                           {{ STATIC_URL }}images/main.page.720.405.png 992w 405h,
+                           {{ STATIC_URL }}images/main.page.576.324.png 768w 324h,
+                           {{ STATIC_URL }}images/main.page.480.270.png 480w 270h">
+    </div>
+</div>
+
+<div class="login_dialog" style="display: none">
+    <div class="login_area">
+        <div class="user_login_box">
+            <div class="titel">Login:</div>
+            <span class="login_title">Choose the project of the itms: Login here...</span>
+            <div class="login_error" style="display: none" data-login-status="{{user_login_status}}" data-msg="{{message}}"></div>
+            <!--<script src="{{ STATIC_URL }}index/static/js/ChooseProject.js"></script>
+			<script>
+			choose_project("project");
+		    </script>-->
+			<!--<script src="{{ STATIC_URL }}index/static/js/jump.js"></script>-->
+			<script type="text/javascript">
+			function setsubmit()
+			{
+			if(mylink.value == 0)
+			window.location='http://10.239.173.54/dpdk/reportcenter/performancereport/';
+			if(mylink.value == 1)
+			window.location='http://10.239.173.54/dpdk/reportcenter/performancereport/';
+			if(mylink.value == 2)
+			window.location='http://10.239.173.54/dpdk/reportcenter/performancereport/';
+			}
+			</script>
+			<select name="mylink" id="mylink">
+				<!--<OPTION value="dpdk">dpdk</OPTION>-->
+			<OPTION value="spdk">spdk</OPTION>
+			<!--<OPTION value="waikiki">waikiki</OPTION>-->
+			</select>
+			<!--<input type="button" id="btn" value="提交"
+				onclick="setsubmit(this)" />-->
+            <button class="user_login_btn login_btn">Login</button>
+        </div>
+{#        <div class="project_select_box" style="display: none">#}
+{#            <span class="project_title">Welcome {{username}} to itms !</span>#}
+{##}
+{#            {% if project_list|length == 0 %}#}
+{#                <div class="project_null">{{message}}</div>#}
+{#            {% else %}#}
+{#                <span class="select_title">Please select a project:</span>#}
+{#                <div class="project_select">#}
+{#                    <span class="select_txt"></span>#}
+{#                    <img src="{{ STATIC_URL }}images/downArrow.png">#}
+{#                </div>#}
+{#    <!--#}
+{#                <ul class="project_list" style="display: none">#}
+{#                    {% load menu_tags %}{% show_menu 0 1 0 100 %}#}
+{#                </ul>#}
+{#    -->#}
+{#                <ul class="project_list" style="display: none">#}
+{#                    {% for project in project_list %}#}
+{#                    <li><a>{{project}}</a></li>#}
+{#                    {% endfor %}#}
+{#                </ul>#}
+{##}
+{#                <button class="project_login_btn login_btn">Enter</button>#}
+{#            {% endif %}#}
+{##}
+{#        </div>#}
+    </div>
+
+</div>

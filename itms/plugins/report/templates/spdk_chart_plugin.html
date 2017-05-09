@@ -1,0 +1,90 @@
+{% addtoblock "css" %}
+    <link href="{{ STATIC_URL }}report/static/css/report_chart_plugin.css" rel="stylesheet" type="text/css" />
+{% endaddtoblock %}
+
+{% addtoblock "js" %}
+    <script type="text/javascript" src="{{ STATIC_URL }}report/static/js/charts.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}report/static/js/spdk_chart_plugin.js"></script>
+{% endaddtoblock %}
+
+<script type="text/javascript">
+    {% if not auth_flag %}
+        window.location.href = window.location.origin;
+    {% endif %}
+</script>
+
+<div class="chart_area">
+    <div class="title">
+        <span>{{title}}</span>
+    </div>
+
+    <div class="select_area">
+        <div class="select1">
+            <span>IO_Size:</span>
+            <select>
+                <option>4K</option>
+                {% for io_size in io_size_list %}
+                    <option data-platform_id="{{ platform.id }}">{{io_size.io_size}}</option>
+                {% endfor%}
+            </select>
+        </div>
+
+        <div class="select2">
+            <span>rw_method:</span>
+            <select>
+				<!--<option>All</option>-->
+                    <option data-rw_id="{{ rw.id }}">{{plan_list.rw.rw_method}}</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="chart" class="chart_area">
+        <div id="regular_chart" style="width: {{size.width}}; height: {{size.height}};" data-chart-data = "{{ chart_data }}">
+		
+		
+		</div>
+        <div class="chart_nodata" style="display: none"> No data report !!</div>
+    </div>
+
+    <br style="clear:both;" />
+</div>
+	<div style="text-align:center; color:#00F; font-weight:bold;font-size:16px;">  Hardrdware and Software Config:  </div>		
+		<h4 style="font-weight:bold;">Host Envionment:</h4>
+		<table border="1">
+			<tr>
+				<th>Os</th>
+				<th>Cpu</th>
+				<th>Memory</th>
+				<th>RDMA NIC</th>
+				<th>Fio-Version</th>
+			</tr>
+			<tr>
+				<td>Linux 4.8.15-200.fc24.x86_64</td>
+				<td>Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz (haswell)</td>
+				<td>64GB</td>
+				<td>25GB</td>
+				<td>2.10 Version</td>
+			</tr>
+			</table>
+			<tr></tr>
+			<h4 style="font-weight:bold;">Target Envionment:</h4>
+		<table border="2">
+			<tr>
+				<th>Os</th>
+				<th>Cpu</th>
+				<th>Memory</th>
+				<th>RDMA NIC</th>
+				<th>Fio-Version</th>
+			</tr>
+			<tr>
+				<td>Linux 4.8.15-200.fc24.x86_64</td>
+				<td>Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz (haswell)</td>
+				<td>64GB</td>
+				<td>25GB</td>
+				<td>2.6 Version</td>
+			</tr>
+			</table>
+        <div class="test_env">
+			<div id="rw_type">{{plan_list.rw.rw_method}}</div>
+			<div id="case_type">{{plan_list.name}}</div>
+<div class="option" style="display: none">{{ chartoption|safe }}</div>

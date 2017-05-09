@@ -1,0 +1,275 @@
+{% addtoblock "css" %}
+    <link href="{{ STATIC_URL }}report/static/css/regular_report_plugin.css" rel="stylesheet" type="text/css" />
+{% endaddtoblock %}
+
+{% addtoblock "js" %}
+    <script type="text/javascript" src="{{ STATIC_URL }}report/static/js/regular_report_plugin.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}report/static/js/charts.js"></script>
+{% endaddtoblock %}
+
+<script type="text/javascript">
+    {% if not auth_flag %}
+        window.location.href = window.location.origin;
+    {% endif %}
+</script>
+
+<br style="clear: both" />
+<div class="execution">
+    <div class="ui_dynamic_table dynamic_1">
+        <table class="ui_table ui_table_out" id="execution_table" cellpadding="0" cellspacing="0" width="100%" border="1">
+            <thead>
+            <tr>
+                <th style="width:6%;" class="th_center">Select</th>
+                <th style="width:8%;">ID</th>
+                <th style="width:17%;">Name</th>
+                <th style="width:11%;">OS</th>
+                <th style="width:11%;">Platform</th>
+                <th style="width:10%;">Runner</th>
+                <th style="width:16%;" class="th_center">Time</th>
+                <th style="width:8%;">Total</th>
+                <th style="width:13%;" class="th_center">PassRate</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for exe in exec_list %}
+                <tr data-id="{{ exe.id }}" data-name="{{ exe.name }}">
+
+                    <td class="td_center"><input data-name="{{exe.name}}" type="checkbox" name="checkbox" value="{{exe.id}}" /></td>
+                    <td><div title="{{ exe.id }}">{{exe.id}}</div></td>
+                    <td><div title="{{ exe.name }}"><span class="name">{{exe.name}}</span></div></td>
+                    <td><div title="{{ exe.os }}">{{exe.os}}</div></td>
+                    <td><div title="{{ exe.platform }}">{{exe.platform}}</div></td>
+                    <td><div title="{{ exe.runner }}">{{exe.runner}}</div></td>
+                    <td class="td_center"><div title="{{ exe.time | date:'Y-m-d H:i:s' }}">{{exe.time | date:'Y-m-d H:i:s'}}</div></td>
+                    <td><div title="{{ exe.total }}">{{exe.total}}</div></td>
+                    <td class="passrate td_center"><div title="{{ exe.passrate }}">{{exe.passrate}}%</div></td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if exec_list|length == 0 %}
+            <div class="nodata">No data for show</div>
+        {% endif %}
+    </div>
+    <div class="ui_operation_area">
+        <div class="ui_button_area">
+            <span class="compare button_gray compare_exe">Compare</span>
+        </div>
+
+        <div class="ui_paginator_area">
+            {% if exec_all|length > 10 %}
+            <div class="ui_paginator">
+                {% if exec_list.has_previous %}
+                    <a class="previous" data-page="{{exec_list.previous_page_number}}"><< Previous</a>
+                {% endif %}
+
+                <span>
+                {% for p in exec_page_range %}
+                    {% ifequal p exec_list.number %}
+                        <span class="current">{{p}}</span>
+                    {% else %}
+                        <a class="page" data-page="{{p}}">{{p}}</a>
+                    {% endifequal %}
+                {% endfor %}
+                </span>
+
+                {% if exec_list.has_next %}
+                    <a class="next" data-page="{{ exec_list.next_page_number }}">Next >></a>
+                {% endif %}
+            <a class="count">[{{ exec_list.number }}/{{ exec_list.paginator.num_pages }} page]</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="suite" style="display: none">
+    <!-- chart -->
+    <div class="suite_chart">
+        <div style="float:left;width:50%">
+            <div class="chart_title span"><span class="suite_title"></span></div>
+            <div class="chart_title span"><span class="subtitle"> -- TestSuite Info</span></div>
+            <div id="pie_legend" class="pie_legend"></div>
+            <div id="pie_chart" style="height: 280px;" data-suite-result="{{ suite_result_chart_data }}"></div>
+        </div>
+        <div style="float:left;width:50%">
+            <div class="chart_title span" style="width:100%;"><span class="case_title"></span></div>
+            <div class="chart_title span" style="width:100%;"><span class="subtitle"> -- TestResult Info</span></div>
+            <div id="circle_legend" class="pie_legend"></div>
+            <div id="circle_chart"  style="height: 280px;"></div>
+        </div>
+        <br style="clear: both">
+    </div>
+
+    <div class="ui_table_title">TestSuite Results<span class="fill_info"></span></div>
+    <div class="ui_dynamic_table dynamic_1">
+        <table class="ui_table ui_table_out" id="suite_table" cellpadding="0" cellspacing="0" width="100%" border="1">
+            <thead>
+            <tr>
+                <th style="width:10%;">Suite ID</th>
+                <th style="width:16%;">Suite Name</th>
+                <th style="width:9%;" class="th_center">Pass</th>
+                <th style="width:9%;" class="th_center">Fail</th>
+                <th style="width:9%;" class="th_center">Block</th>
+                <th style="width:9%;" class="th_center">NA</th>
+                <th style="width:10%;" class="th_center">No_Run</th>
+                <th style="width:9%;" class="th_center">Total</th>
+                <th style="width:19%;" class="th_center">Time</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for result in suite_result_list %}
+                <tr data-suite-result-id="{{result.id}}" data-suite-result-name="{{result.testsuite.name}}" data-suite-id="{{result.testsuite.id}}">
+                    <td><div title="{{ result.testsuite.id }}">{{result.testsuite.id}}</div></td>
+                    <td><div title="{{ result.testsuite.name }}">{{result.testsuite.name}}</div></td>
+                    <td class="td_center"><div class="passnum num" title="{{ result.passed }}">{{result.passed}}</div></td>
+                    <td class="td_center"><div class="failnum num" title="{{ result.failed }}">{{result.failed}}</div></td>
+                    <td class="td_center"><div class="blocknum num" title="{{ result.block }}">{{result.block}}</div></td>
+                    <td class="td_center"><div class="nanum num" title="{{ result.na }}">{{result.na}}</div></td>
+                    <td class="td_center"><div class="norunnum num" title="{{ result.no_run }}">{{result.no_run}}</div></td>
+                    <td class="td_center"><div class="totalnum num" title="{{ result.total }}">{{result.total}}</div></td>
+                    <td class="td_center"><div title="{{ result.time | date:'Y-m-d H:i:s' }}">{{result.time | date:'Y-m-d H:i:s'}}</div></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if suite_result_list|length == 0 %}
+            <div class="nodata">No data for show</div>
+        {% endif %}
+    </div>
+
+    <div class="ui_operation_area">
+        <div class="ui_paginator_area">
+            {% if suite_result_all|length > 10 %}
+            <div class="ui_paginator">
+                {% if suite_result_list.has_previous %}
+                    <a class="previous" data-page="{{suite_result_list.previous_page_number}}"><< Previous</a>
+                {% endif %}
+
+                <span>
+                {% for p in suite_page_range %}
+                    {% ifequal p suite_result_list.number %}
+                        <span class="current">{{p}}</span>
+                    {% else %}
+                        <a class="page" data-page="{{p}}">{{p}}</a>
+                    {% endifequal %}
+                {% endfor %}
+                </span>
+
+                {% if suite_result_list.has_next %}
+                    <a class="next" data-page="{{ suite_result_list.next_page_number }}">Next >></a>
+                {% endif %}
+            <a class="count">[{{ suite_result_list.number }}/{{ suite_result_list.paginator.num_pages }} page]</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="suite_detail" style="display: none">
+    <div class="ui_table_title">TestCase Results<span class="fill_info"></span></div>
+    <div class="ui_dynamic_table dynamic_1">
+        <table class="ui_table ui_table_out" id="suite_detail_table" cellpadding="0" cellspacing="0" width="100%" border="1">
+            <thead>
+            <tr>
+                <th style="width:10%;">TestCase ID</th>
+                <th style="width:15%;">TestCaseResult ID</th>
+                <th style="width:20%;">TestCase Name</th>
+                <th style="width:10%;" class="th_center">Result</th>
+                <!-- <th style="width:40%;">Description</th> -->
+                <th style="width:15%;">Bug</th>
+                <th style="width:15%;">Log</th>
+                <th style="width:15%;">Comments</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for detail in detail_result_list %}
+                <tr>
+                    <td><div title="{{ detail.testcase.id }}">{{detail.testcase.id}}</div></td>
+                    <td><div title="{{ detail.id }}">{{detail.id}}</div></td>
+                    <td><div title="{{ detail.testcase.name }}">{{detail.testcase.name}}</div></td>
+                    <td class="td_center"><div class="result" title="{{ detail.result | upper }}">{{detail.result | upper}}</div></td>
+                    <!-- <td><div title="{{ detail.testcase.description }}">{{detail.testcase.description}}</div></td> -->
+                    <td><div title="{{ detail.bug }}">
+                        {% if 'https://' in detail.bug or 'http://' in detail.bug %}
+                        <a href="{{ detail.bug }}">{{ detail.bug }}</a>
+                        {% else %}
+                        <a>{{ detail.bug }}</a>
+                        {% endif %}
+                    </div></td>
+                    <td><div title="{{ detail.log }}">{{ detail.log }}</div></td>
+                    <td><div title="{{ detail.comments }}">{{detail.comments}}</div></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if detail_result_list|length == 0 %}
+            <div class="nodata">No data for show</div>
+        {% endif %}
+    </div>
+
+    <div class="ui_operation_area">
+        <div class="ui_paginator_area">
+            {% if detail_result_all|length > 10 %}
+            <div class="ui_paginator">
+                {% if detail_result_list.has_previous %}
+                    <a class="previous" data-page="{{detail_result_list.previous_page_number}}"><< Previous</a>
+                {% endif %}
+
+                <span>
+                {% for p in suite_detail_page_range %}
+                    {% ifequal p detail_result_list.number %}
+                        <span class="current">{{p}}</span>
+                    {% else %}
+                        <a class="page" data-page="{{p}}">{{p}}</a>
+                    {% endifequal %}
+                {% endfor %}
+                </span>
+
+                {% if detail_result_list.has_next %}
+                    <a class="next" data-page="{{ detail_result_list.next_page_number }}">Next >></a>
+                {% endif %}
+            <a class="count">[{{ detail_result_list.number }}/{{ detail_result_list.paginator.num_pages }} page]</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="case" style="display: none">
+    <div class="ui_table_title">Contrast Analysis Results</div>
+    <div class="ui_dynamic_table dynamic_1">
+        <table class="ui_table ui_table_out" id="exe_compare_table" cellpadding="0" cellspacing="0" border="1">
+            <thead>
+            <tr>
+                <th>TestCase ID</th>
+                <th>TestCase Name</th>
+                <th>TestSuite ID</th>
+                <th>TestSuite Name</th>
+                {% for exe_name in exe_name_list %}
+                    <th class="th_center">{{ exe_name }}</th>
+                {% endfor %}
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for info in fail_result_list %}
+                    <tr>
+                        {% for data in info %}
+                            {% if forloop.counter0 > 3 %}
+                                <td class="td_center"><div class="result" title="{{ data | upper }}">{{ data | upper }}</div></td>
+                            {% else %}
+                                <td><div title="{{ data}}">{{data}}</div></td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if fail_result_list|length == 0 %}
+            <div class="nodata">No data for show</div>
+        {% endif %}
+    </div>
+</div>
+<br style="clear: both">

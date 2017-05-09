@@ -1,0 +1,125 @@
+.execution input[name="planSelect"] {
+    width: 16px;
+    height: 16px;
+}
+.green {
+  color: green;
+  font-weight: bold;
+}
+.red {
+    color: red;
+    font-weight: bold;
+}
+.orange {
+    color: orange;
+    font-weight: bold;
+}
+.blue {
+  color: #87cefa;
+  font-weight: bold;
+}
+.gray {
+/*  color: gray;*/
+    font-weight: bold;
+}
+.suite_detail .result {
+    font-size: 14px;
+    width: 62px;
+    height: 16px;
+    line-height: 16px;
+    font-weight: 200;
+    text-align: center;
+    color: #fff;
+    display: inline-block;
+}
+.informal_result {
+    display: inline !important;
+    font-weight: bold !important;
+    color: #636363 !important;
+}
+.green_txt {
+    color: white;
+    background: green;
+}
+.red_txt {
+    color: white;
+    background: red;
+}
+.orange_txt {
+    color: white;
+    background: orange;
+}
+table .name:hover {
+    cursor: pointer;
+    color: #00AEEF;
+    text-decoration: underline;
+}
+table .name {
+    text-decoration: underline;
+}
+table .casename {
+    text-decoration: underline;
+}
+table .casename:hover {
+    cursor: pointer;
+    color: #00AEEF;
+    text-decoration: underline;
+}
+.compare {
+    cursor: pointer;
+}
+.suite .num {
+    cursor: pointer;
+    color: #0071C5;
+    text-decoration: underline;
+}
+.suite .num:hover {
+    cursor: pointer;
+    font-weight: bold;
+}
+.suite_chart {
+    margin-top: 10px;
+}
+.imitate_table {
+    width: 100%;
+    border: 1px solid #c0c0c0;
+    border-bottom: 0;
+}
+.imitate_table_navigation,
+.imitate_table_content {
+    width: 100%;
+    border-bottom: 1px solid #c0c0c0;
+}
+.imitate_table_navigation span,
+.imitate_table_content span {
+    display: inline-block;
+    padding: 5px 15px;
+}
+.imitate_table_navigation span {
+    /*border-right: 1px solid #c0c0c0;*/
+}
+.no_right_border {
+    border-right: 0 !important;
+}
+.ui_cell_table tbody tr:nth-child(even) {
+    background: transparent linear-gradient(rgba(246, 221, 199, 0.1) 0px, rgba(246, 221, 199, 0.3) 100%) repeat scroll 0% 0% !important;
+}
+.execution .select_area {
+    height: 50px;
+    line-height: 50px;
+}
+.execution .select_area .select1,
+.execution .select_area .select2 {
+    float: right;
+    width: 280px;
+}
+.execution .select_area span {
+    display: inline-block;
+    padding: 0 5px;
+    color: gray;
+}
+.execution .select_area select {
+    padding: 2px 3px;
+    width: 150px;
+    cursor: pointer;
+}

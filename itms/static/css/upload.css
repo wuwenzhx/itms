@@ -1,0 +1,44 @@
+.upload {
+    border-radius:10px;
+    border: 2px solid #ececec;
+    width: 50%;
+    height:120px;
+    margin: 0 auto;
+    padding: 20px 20px 20px 20px;
+}
+.upload label {
+    height: 30px;
+    font-size: 18px;
+    font-weight: 500;
+    color: rgb(0, 113, 197);
+}
+.filter {
+    margin-top:20px;
+    height: 30px;
+}
+.upload_btn {
+    display: inline-block;
+    width: 90px;
+    height: 28px;
+    border: 1px solid rgb(0, 113, 197);
+    border-radius: 28px;
+    text-align: center;
+    float:right;
+    background: #ececec;
+    color:rgb(0, 113, 197);
+}
+.file_list {
+    border-radius:10px;
+    border: 2px solid #ececec;
+    width: 50%;
+    margin: 10px auto;
+    padding: 20px 20px 20px 20px;
+}
+.file_list span{
+    margin: 5px 0 5px 0;
+    display: block;
+    text-align: left;
+    font-size: 18px;
+    font-weight: 500;
+    color: rgb(0, 113, 197);
+}

@@ -1,0 +1,26 @@
+{% extends "frame.html" %}
+
+{% block base_content %}
+
+    {% addtoblock "css" %}
+        <link href="{{ STATIC_URL }}css/undated_report.css" rel="stylesheet" type="text/css"/>
+    {% endaddtoblock %}
+
+    <div class="undated_class">
+        <div class="ui_undated">
+            <div class="header">
+                <span class="header_title">Undated Test Report</span>
+            </div>
+            <div class="chart">
+                {% placeholder placeholder_01 %}
+            </div>
+            <div class="undated_report">
+                {% placeholder placeholder_02 %}
+            </div>
+        </div>
+    </div>
+
+    <div class="ui_footer">
+        <span class="footer_text">iTMS | © Intel Corporation</span>
+    </div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "frame.html" %}
+
+{% block base_content %}
+
+    {% addtoblock "css" %}
+        <link href="{{ STATIC_URL }}css/regular_report.css" rel="stylesheet" type="text/css"/>
+    {% endaddtoblock %}
+
+    <div class="regular_class">
+        <div class="ui_regular">
+            <div class="header">
+                <span class="header_title">Regular Test Report</span>
+            </div>
+            <div class="chart">
+                {% placeholder placeholder_01 %}
+            </div>
+            <div class="regular_report">
+                {% placeholder placeholder_02 %}
+            </div>
+        </div>
+    </div>
+
+    <div class="ui_footer">
+        <span class="footer_text">iTMS | © Intel Corporation</span>
+    </div>
+{% endblock %}

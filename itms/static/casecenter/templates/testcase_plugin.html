@@ -1,0 +1,430 @@
+<script type="text/javascript">
+    {% if not auth_flag %}
+        window.location.href = window.location.origin;
+    {% endif %}
+</script>
+<div class="callback_status" data-request-method="{{request.method}}" data-status="{{ status }}" data-message="{{ message }}" style="display: none"></div>
+
+{# tool bar #}
+<div class="ui_edit_area">
+    <div class="ui_edit_left_box">
+        <img class="ui_edit_icon" src="{{ STATIC_URL }}images/settings.png">
+        <button class="ui_edit_type_btn">Edit Type</button>
+    </div>
+    <div class="ui_edit_left_box">
+        <div class="ui_add_icon" style="background: url({{ STATIC_URL }}images/bundle.png) -53px -112px no-repeat;"></div>
+        <button class="ui_add_btn">New TestCase</button>
+    </div>
+    <div class="ui_edit_left_box">
+        <img class="ui_filter_icon" src="{{ STATIC_URL }}images/subscript_obj.gif">
+        <button class="ui_filter_btn">Filter</button>
+    </div>
+    <div class="ui_edit_left_box" style="border: 0">
+        <input type="search" class='ui_item_name_search' placeholder="Name"/>
+        <span class='ui_item_name_search_icon' data-starter="testcase"></span>
+    </div>
+</div>
+
+{# filter area #}
+<div class="ui_filter_item_area" style="display: none;">
+    <div class="tool">
+        <div class="action ui_cancel_filter" style="background: url({{ STATIC_URL }}images/refresh2.png) center no-repeat"></div>
+        <div class="action ui_filter" data-starter="testcase" style="background: url({{ STATIC_URL }}images/magnify.png) center no-repeat"></div>
+    </div>
+    <div class="ui_filter_item">
+        <div class="header">
+            <div class="header_icon" style="background: url({{ STATIC_URL }}images/paper-clip.png) center no-repeat"></div>
+            <div class="txt">Requirement Filter</div>
+        </div>
+        <div class="ui_filter_box">
+            <span class="title">Requirement Type:</span>
+            <select class="filter req_type_filter" name="req_type_filter">
+                <option></option>
+                {% for req_type in req_type_list %}
+                <option id="{{req_type.id}}" class="filter_select_option">{{req_type.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="ui_filter_box">
+            <span class="title">Requirement:</span>
+            <select class="filter req_filter" name="req_filter">
+                <option></option>
+                {% for req in req_list %}
+                <option id="{{req.id}}" class="filter_select_option">{{req.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="ui_filter_item">
+        <div class="header">
+            <div class="header_icon" style="background: url({{ STATIC_URL }}images/paper-clip.png) center no-repeat"></div>
+            <div class="txt">Feature Filter</div>
+        </div>
+        <div class="ui_filter_box">
+            <span class="title">Feature Component:</span>
+            <select class="filter fea_component_filter" name="fea_component_filter">
+                <option></option>
+                {% for component in fea_component_list %}
+                <option id="{{component.id}}" class="filter_select_option">{{component.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="ui_filter_box">
+            <span class="title">Feature:</span>
+            <select class="filter fea_filter" name="fea_filter">
+                <option></option>
+                {% for fea in fea_list %}
+                <option id="{{fea.id}}" class="filter_select_option">{{fea.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="ui_filter_item">
+        <div class="header">
+            <div class="header_icon" style="background: url({{ STATIC_URL }}images/paper-clip.png) center no-repeat"></div>
+            <div class="txt">Case Filter</div>
+        </div>
+        <div class="ui_filter_box">
+            <span class="title">TestCase Type:</span>
+            <select class="filter case_type_filter" name="case_type_filter">
+                <option></option>
+                {% for type in type_list %}
+                <option id="{{type.id}}" class="filter_select_option">{{type.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="ui_filter_box">
+            <span class="title">Performance:</span>
+            <select class="filter perf_filter" name="perf_filter">
+                <option></option>
+                <option class="filter_select_option">True</option>
+                <option class="filter_select_option">False</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+{# detail area #}
+<div class="ui_detail_area">
+    <div class="detail_frame">
+        <div class="detail_area">
+            {% for case in testcase_list %}
+
+                <div class="ui_list">
+                    <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -15px -17px no-repeat;"></div></div>
+                    <div class="info">
+                        <div style="height: 60%">
+                            <span class="id" title="{{ case.id }}">ID: {{ case.id }}</span>
+                            <span class="name" title="{{ case.name }}">Name: {{ case.name }}</span>
+                        </div>
+                        <div style="height: 40%">
+                            <span class="attr" title="{{ case.type }}">Type: {{ case.type }}</span>
+                            <span class="attr" title="{{ case.feature }}">Feature: {{ case.feature }}</span>
+                            <span class="attr" title="{{ case.performance }}">Performance: {{ case.performance }}</span>
+                            {% if case.performance %}
+                                <span class="attr" title="{{ case.app.name }}">App: {{ case.app.name }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui_detail_info" data-id="{{ case.id }}" style="display: none;">
+                    <div class="ui_detail_header">
+                        <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -50px -10px no-repeat;"></div></div>
+                        <div class="info">
+                            <div style="height: 100%">
+                                <span class="title" title="{{ case.id }}">ID: {{ case.id }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui_detail_tab_area">
+                        <div class="ui_detail_tab ui_tab_focus" id="tab_0">Overview</div>
+{#                        <div class="ui_detail_tab" data-related_obj="feature" id="tab_1">Related Feature</div>#}
+                        <div class="ui_detail_tab" data-related_obj="testsuite" id="tab_1">Related TestSuite</div>
+                    </div>
+
+                    <div class="ui_detail_content_area">
+                        {# tab_1: overview detail #}
+                        <div class="ui_overview_area">
+                        <div class="header">
+                            <span>Detail</span>
+                            <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                            <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center center no-repeat;"></span>
+                        </div>
+                        <div class="content_area">
+                            <div class="content">
+                                <span class="title">Name :</span>
+                                <input class="name" type="text" value="{{ case.name }}">
+                            </div>
+                            <div class="content">
+                                <span class="title">Type :</span>
+                                <select class="type_select">
+                                    <option id="0"></option>
+                                    {% for type in type_list %}
+                                        {% ifequal type case.type %}
+                                            <option id="{{type.id}}" selected="selected">{{type.name}}</option>
+                                        {% else %}
+                                            <option id="{{type.id}}">{{type.name}}</option>
+                                        {% endifequal %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="content">
+                                <span class="title">Parameters :</span>
+                                <input class="parameters" type="text" value="{{ case.parameters }}">
+                            </div>
+                            <div class="content">
+                                <span class="title">Feature :</span>
+                                <select class="fea_select">
+                                    <option id="0"></option>
+                                    {% for fea in fea_list %}
+                                        {% ifequal fea case.feature %}
+                                            <option id="{{fea.id}}" selected="selected">{{fea.name}}</option>
+                                        {% else %}
+                                            <option id="{{fea.id}}">{{fea.name}}</option>
+                                        {% endifequal %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="content">
+                                <span class="title">Script Path :</span>
+                                <input class="script_path" type="text" value="{{ case.script_path }}">
+                                {% if 'http://' in case.script_path or 'https://' in case.script_path %}
+                                    <img class="item_link" style="cursor: pointer;" src="{{ STATIC_URL }}images/communication.png">
+                                {% else %}
+                                    <img class="item_link" style="cursor: not-allowed;" src="{{ STATIC_URL }}images/communication.png">
+                                {% endif %}
+                            </div>
+                            <div class="content">
+                                <span class="title">Performance :</span>
+                                <span>{{ case.performance }}</span>
+                            </div>
+                            <div class="content">
+                                <span class="title">Config Path:</span>
+                                <input class="config_path" type="text" value="{{ case.config_path }}">
+                                {% if 'http://' in case.config_path or 'https://' in case.config_path %}
+                                    <img class="item_link" style="cursor: pointer;" src="{{ STATIC_URL }}images/communication.png">
+                                {% else %}
+                                    <img class="item_link" style="cursor: not-allowed;" src="{{ STATIC_URL }}images/communication.png">
+                                {% endif %}
+                            </div>
+                            <div class="content">
+                                <span class="title">App :</span>
+                                {% if case.app %}
+                                    <span>{{ case.app }}</span>
+                                {% else %}
+                                    <span>None</span>
+                                {% endif %}
+                            </div>
+                            <br style="clear: both">
+                        </div>
+                        <div class="desc_area">
+                            <span>Description :</span>
+                            <textarea class="desc">{{ case.description }}</textarea>
+                        </div>
+                        <br style="clear: both">
+                        </div>
+                        {# tab_2: related data detail #}
+                        <div class="ui_related_data_area" style="display: none">
+                            <div class="header">
+                                <span class="ui_save" data-starter="save_relation" style="background: url({{ STATIC_URL }}images/save.png) center center no-repeat;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            {% if testcase_list|length == 0 %}
+                <div class="ui_detail_nodata">No data for show</div>
+            {% endif %}
+
+            <div class="ui_operation_area">
+                <div class="ui_paginator_area">
+                    {% if testcase_count > entry_num %}
+                    <div class="ui_paginator" id="testcase">
+                        {% if testcase_list.has_previous %}
+                            <a class="previous" data-page="{{testcase_list.previous_page_number}}"><< Previous</a>
+                        {% endif %}
+
+                        <span>
+                        {% for p in page_range %}
+                            {% ifequal p testcase_list.number %}
+                                <span class="current">{{p}}</span>
+                            {% else %}
+                                <a class="page" data-page="{{p}}">{{p}}</a>
+                            {% endifequal %}
+                        {% endfor %}
+                        </span>
+
+                        {% if testcase_list.has_next %}
+                            <a class="next" data-page="{{ testcase_list.next_page_number }}">Next >></a>
+                        {% endif %}
+                    <a class="count">[{{ testcase_list.number }}/{{ testcase_list.paginator.num_pages }} page]</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{# new testcase tpl #}
+<div class="ui_detail_info ui_new_detail">
+    <div class="ui_detail_header">
+    <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -50px -10px no-repeat;"></div></div>
+        <div class="info">
+            <div style="height: 100%">
+                <span class="title">ID: None</span>
+            </div>
+        </div>
+    </div>
+    <div class="ui_detail_tab_area">
+        <div class="ui_detail_tab ui_tab_focus" id="tab_0">Overview</div>
+    </div>
+    <div class="ui_detail_content_area">
+        {# tab_1: overview detail #}
+        <div class="ui_overview_area">
+            <div class="header">
+                <span>Detail</span>
+                <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+            </div>
+            <div class="content_area">
+                <div class="content">
+                    <span class="title">Name :</span>
+                    <input class="name" type="text">
+                </div>
+                <div class="content">
+                    <span class="title">Type :</span>
+                    <select class="type_select">
+                        <option id="0"></option>
+                        {% for type in type_list %}
+                            <option id="{{type.id}}">{{type.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="content">
+                    <span class="title">Parameters :</span>
+                    <input class="parameters" type="text">
+                </div>
+                <div class="content">
+                    <span class="title">Feature :</span>
+                    <select class="fea_select">
+                        <option id="0"></option>
+                        {% for fea in fea_list %}
+                            <option id="{{fea.id}}">{{fea.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="content">
+                    <span class="title">Script Path :</span>
+                    <input class="script_path" type="text" value="{{ case.script_path }}">
+                </div>
+                <div class="content">
+                    <span class="title">Performance :</span>
+                    <select class="perf_select">
+                        <option>False</option>
+                        <option>True</option>
+                    </select>
+                </div>
+                <div class="content">
+                    <span class="title">Config Path:</span>
+                    <input class="config_path" type="text" value="{{ case.config_path }}">
+                </div>
+                <div class="content">
+                    <span class="title">App :</span>
+                    <select class="app_select ui_select_disabled" disabled="disabled">
+                        <option id="0"></option>
+                        {% for app in app_list %}
+                            <option id="{{app.id}}">{{app.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <br style="clear: both">
+            </div>
+            <div class="desc_area">
+                <span>Description :</span>
+                <textarea class="desc"></textarea>
+            </div>
+            <br style="clear: both">
+        </div>
+    </div>
+</div>
+
+{# related data tpl #}
+<div class="ui_testsuite_related_box_tpl" style="display: none;">
+    <span class="left_box">
+        <div class="tool_bar">
+            <div class="title">
+                <div class="title_icon" style="background: url({{ STATIC_URL }}images/bundle_big.png) -216px -128px no-repeat;"></div>
+                <div class="title_txt">TestSuite</div>
+            </div>
+            <div class="tool">
+                <div class="find_icon" title="filter" data-plugin="testcase" style="background: url({{ STATIC_URL }}images/binocular.png) center no-repeat"></div>
+                <div class="title_check_box" title="select all" style="background: url({{ STATIC_URL }}images/check_all.png) center no-repeat"></div>
+            </div>
+        </div>
+        <div class="data_box">
+            <div class="filer_content" title="Filter: All">Filter: All</div>
+            <div class="data_content">
+                {% for suite in testsuite_list %}
+                    <div class="ui_related_item" id="{{ suite.id }}">
+                        <input type="checkbox"/>{{ suite.name }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </span>
+    <span class="tooltip">
+        <img class="arrows_r" src="{{ STATIC_URL }}images/arrows_r.png">
+        <img class="arrows_l" src="{{ STATIC_URL }}images/arrows_l.png">
+    </span>
+    <span class="right_box">
+        <div class="tool_bar">
+            <div class="title">
+                <div class="title_icon" style="background: url({{ STATIC_URL }}images/bundle_big.png) -210px -76px no-repeat;"></div>
+                <div class="title_txt">Related TestSuite</div>
+            </div>
+            <div class="tool">
+                <div class="title_check_box" title="select all" style="background: url({{ STATIC_URL }}images/check_all.png) center no-repeat"></div>
+            </div>
+        </div>
+        <div class="data_box">
+            {% for suite in related_suite_list %}
+                <div class="ui_related_item" id="{{ suite.id }}">
+                    <input type="checkbox"/>{{ suite.name }}
+                </div>
+            {% endfor %}
+        </div>
+    </span>
+</div>
+
+{# related data filter tpl #}
+<div class="ui_related_filter_dialog"
+     style=" display: none;
+             height: 220px;
+             background: #fff url('{{ STATIC_URL }}images/peal_top.png') bottom right no-repeat; ">
+
+    <p>Related Data Filter</p>
+    <hr>
+    <div class="filter_group no_border">
+        <div class="filter_area">
+            <span class="title">TestSuite Subsystem:</span>
+            <select class="filter suite_subsystem_related_filter" name="suite_subsystem_related_filter">
+                <option></option>
+                {% for subsystem in subsystem_list %}
+                <option id="{{subsystem.id}}" class="filter_select_option">{{subsystem.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter_area">
+            <span class="title">TestSuite Name:</span>
+            <input type='search' class="filter suite_name_related_filter" />
+        </div>
+    </div>
+    <div class="btn_area">
+        <button class="ui_filter_dialog_close_btn">Cancel</button>
+        <button class="ui_filter_dialog_search_btn">Search</button>
+    </div>
+</div>

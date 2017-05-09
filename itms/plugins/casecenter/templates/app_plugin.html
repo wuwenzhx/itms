@@ -1,0 +1,183 @@
+{% addtoblock "css" %}
+    <link href="{{ STATIC_URL }}casecenter/static/css/app.css" rel="stylesheet" type="text/css"/>
+    <link href="{{ STATIC_URL }}casecenter/static/css/casecenter.css" rel="stylesheet" type="text/css"/>
+{% endaddtoblock %}
+
+{% addtoblock "js" %}
+    <script type="text/javascript" src="{{ STATIC_URL }}casecenter/static/js/app.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}casecenter/static/js/util.js"></script>
+{% endaddtoblock %}
+
+<script type="text/javascript">
+    {% if not auth_flag %}
+        window.location.href = window.location.origin;
+    {% endif %}
+</script>
+
+<div class="callback_status" data-request-method="{{request.method}}" data-status="{{ status }}" data-message="{{ message }}" style="display: none"></div>
+
+{# tool bar #}
+<div class="ui_edit_area">
+    <div class="ui_edit_left_box">
+        <div class="ui_add_icon" style="background: url({{ STATIC_URL }}images/bundle.png) -53px -112px no-repeat;"></div>
+        <button class="ui_add_btn">New App</button>
+    </div>
+    <div class="ui_edit_left_box" style="border: 0">
+        <input type="search" class='ui_item_name_search' placeholder="Name"/>
+        <span class='ui_item_name_search_icon' data-starter="app"></span>
+    </div>
+</div>
+{# detail area #}
+<div class="ui_detail_area">
+    <div class="detail_frame">
+        <div class="detail_area">
+            {% for app_info in app_detail %}
+
+                <div class="ui_list">
+                    <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -15px -17px no-repeat;"></div></div>
+                    <div class="info">
+                        <div style="height: 60%">
+                            <span class="id" title="{{ app_info.app.id }}">ID: {{ app_info.app.id }}</span>
+                            <span class="name" title="{{ app_info.app.name }}">Name: {{ app_info.app.name }}</span>
+                        </div>
+                        <div style="height: 40%">
+                            <span class="attr" title="{{ app_info.app.project }}">Project: {{ app_info.app.project }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui_detail_info" id="{{ forloop.counter0 }}" data-id="{{ app_info.app.id }}" style="display: none;">
+                    <div class="ui_detail_header">
+                        <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -50px -10px no-repeat;"></div></div>
+                        <div class="info">
+                            <div style="height: 100%">
+                                <span class="title" title="{{ app_info.app.id }}">ID: {{ app_info.app.id }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui_detail_tab_area">
+                        <div class="ui_detail_tab ui_tab_focus" id="tab_0">Overview</div>
+                        <div class="ui_detail_tab" id="tab_1">App Attribute</div>
+                    </div>
+
+                    <div class="ui_detail_content_area">
+                        {# tab_1: overview detail #}
+                        <div class="ui_overview_area">
+                            <div class="header">
+                                <span>Detail</span>
+                                <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                                <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+                            </div>
+                            <div class="content_area">
+                                <div class="content">
+                                    <span class="title">Name :</span>
+                                    <input class="name" type="text" value="{{ app_info.app.name }}">
+                                </div>
+                                <br style="clear: both">
+                            </div>
+                            <br style="clear: both">
+                        </div>
+                        {# tab_2: related data detail #}
+                        <div class="ui_related_data_area" style="display: none">
+                            <div class="header">
+                                <span class="ui_add" style="background: url({{ STATIC_URL }}images/add.png) center no-repeat;"></span>
+                            </div>
+
+                            <div class="attr_info_box">
+                                {% for attr in app_info.attr %}
+                                    <div class="attr_info">
+                                        <img class="attr_tag" src="{{ STATIC_URL }}images/item.png">
+                                        <input type="text" id="{{ attr.id }}" class="attr_name" value="{{ attr.name }}">
+                                        <img class="attr_save ui_save" data-starter="save_appAttr" src="{{ STATIC_URL }}images/save_small.png">
+                                        <img class="attr_del ui_del" data-starter="delete_appAttr" src="{{ STATIC_URL }}images/trash_small.png">
+                                    </div>
+                                {% endfor %}
+                                {% if app_info.attr|length == 0 %}
+                                    <div class="ui_small_detail_nodata">No data for show !!</div>
+                                {% endif %}
+                            </div>
+                            <br style="clear:both;">
+
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            {% if app_detail|length == 0 %}
+                <div class="ui_detail_nodata">No data for show</div>
+            {% endif %}
+
+            <div class="ui_operation_area">
+                <div class="ui_paginator_area">
+                    {% if app_count > entry_num %}
+                    <div class="ui_paginator" id="app">
+                        {% if app_list.has_previous %}
+                            <a class="previous" data-page="{{app_list.previous_page_number}}"><< Previous</a>
+                        {% endif %}
+
+                        <span>
+                        {% for p in page_range %}
+                            {% ifequal p app_list.number %}
+                                <span class="current">{{p}}</span>
+                            {% else %}
+                                <a class="page" data-page="{{p}}">{{p}}</a>
+                            {% endifequal %}
+                        {% endfor %}
+                        </span>
+
+                        {% if app_list.has_next %}
+                            <a class="next" data-page="{{ app_list.next_page_number }}">Next >></a>
+                        {% endif %}
+                    <a class="count">[{{ app_list.number }}/{{ app_list.paginator.num_pages }} page]</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{# new app tpl #}
+<div class="ui_detail_info ui_new_detail" style="display: none">
+    <div class="ui_detail_header">
+        <div class="select_icon"><div style="background: url({{ STATIC_URL }}images/foundation.png) -50px -10px no-repeat;"></div></div>
+        <div class="info">
+            <div style="height: 100%">
+                <span class="title">ID: None</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui_detail_tab_area">
+        <div class="ui_detail_tab ui_tab_focus" id="tab_0">Overview</div>
+    </div>
+    <div class="ui_detail_content_area">
+        {# tab_1: overview detail #}
+        <div class="ui_overview_area">
+            <div class="header">
+                <span>Detail</span>
+                <span class="ui_del" data-starter="delete_detail" style="background: url({{ STATIC_URL }}images/trash.png) center no-repeat;"></span>
+                <span class="ui_save" data-starter="save_detail" style="background: url({{ STATIC_URL }}images/save.png) center no-repeat;"></span>
+            </div>
+            <div class="content_area">
+                <div class="content">
+                    <span class="title">Name :</span>
+                    <input class="name" type="text">
+                </div>
+                <br style="clear: both">
+            </div>
+            <br style="clear: both">
+        </div>
+    </div>
+</div>
+
+{# new attr tpl #}
+<div class="attr_info attr_tpl" style="display: none;">
+    <img class="attr_tag" src="{{ STATIC_URL }}images/item.png">
+    <input type="text" id="0" class="attr_name">
+    <img class="attr_save ui_save" data-starter="save_appAttr" src="{{ STATIC_URL }}images/save_small.png">
+    <img class="attr_del ui_del" data-starter="delete_appAttr" src="{{ STATIC_URL }}images/trash_small.png">
+</div>
+
+

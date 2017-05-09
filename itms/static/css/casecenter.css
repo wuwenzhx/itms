@@ -1,0 +1,76 @@
+.req_class,
+.fea_class,
+.case_class,
+.suite_class,
+.plan_class,
+.app_class{
+    height: 95%;
+    width: 100%;
+    overflow-y: auto;
+    color: #636363;
+}
+.ui_related_filter_dialog,
+.ui_related_filter_dialog_2 {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    width: 550px;
+    padding: 10px;
+    /*height: 350px;*/
+    background-color: #fff;
+    border: 1px solid #cdcdcd;
+    border-radius: 4px;
+    z-index: 99;
+}
+.ui_related_filter_dialog p,
+.ui_related_filter_dialog_2 p {
+    width: 100%;
+    text-align: center;
+    color: black;
+    font-size: 18px;
+}
+.ui_related_filter_dialog .title,
+.ui_related_filter_dialog_2 .title {
+    display: inline-block;
+    width: 220px;
+    text-indent: 30px;
+    float: left;
+}
+.ui_related_filter_dialog .filter,
+.ui_related_filter_dialog_2 .filter {
+    padding: 2px;
+    width: 240px;
+}
+.ui_related_filter_dialog .filter_group,
+.ui_related_filter_dialog_2 .filter_group {
+    border-bottom: 1px dotted #cdcdcd;
+    padding: 15px 0;
+    height: auto;
+}
+.ui_related_filter_dialog .filter_area,
+.ui_related_filter_dialog_2 .filter_area {
+    height: 30px;
+}
+.no_border {
+    border: 0 !important;
+}
+.ui_related_filter_dialog .btn_area,
+.ui_related_filter_dialog_2 .btn_area {
+    margin-top: 15px;
+    height: 30px;
+    width: 100%;
+    text-align: center;
+}
+.ui_related_filter_dialog .btn_area button,
+.ui_related_filter_dialog_2 .btn_area button {
+    margin: 0 5px;
+    padding: 4px 20px;
+    color: #fff;
+    background-color: #00aeef;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.15);
+    border: none;
+    border-radius: 2px;
+}

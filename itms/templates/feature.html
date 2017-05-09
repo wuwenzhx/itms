@@ -1,0 +1,26 @@
+{% extends "frame.html" %}
+
+{% block base_content %}
+    <div class="fea_class">
+        <div class="ui_head_area">
+            <span class="head_title">Feature Management</span>
+            <hr>
+        </div>
+        {% placeholder fea_placeholder_01 %}
+        {% placeholder fea_placeholder_02 %}
+    </div>
+
+    <div class="ui_footer">
+        <span class="footer_text">iTMS | © Intel Corporation</span>
+    </div>
+
+{% addtoblock "css" %}
+    <link href="{{ STATIC_URL }}casecenter/static/css/casecenter.css" rel="stylesheet" type="text/css"/>
+{% endaddtoblock %}
+
+{% addtoblock "js" %}
+    <script type="text/javascript" src="{{ STATIC_URL }}casecenter/static/js/feature.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}casecenter/static/js/util.js"></script>
+{% endaddtoblock %}
+
+{% endblock %}
