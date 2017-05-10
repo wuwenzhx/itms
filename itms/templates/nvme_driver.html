@@ -1,7 +1,6 @@
 <html>
 <head>
 
-{{chart_data}}
 <title>Highcharts (runoob.com)</title>
 <script type="text/javascript" src="{{ STATIC_URL}}js/jquery-1.11.1.min.js"></script>
 <!--<script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>-->
@@ -9,25 +8,21 @@
 <script src="http://code.highcharts.com/highcharts-more.js"></script>  
 <!--<script type="text/javascript" src="{{ STATIC_URL
 }}js/jquery-ui.min.js"></script>-->
-<script type="text/javascript" src="/static/nvme_driver/static/js/nvme_driver_trend_chart_plugin.js"></script>
+<!--<script type="text/javascript"
+src="/static/nvme_driver/static/js/nvme_driver_trend_chart_plugin.js"></script>-->
 <!--<script type="text/javascript"
 src="/static/nvme_driver/static/js/charts.js"></script>-->
 <script type="text/javascript" src="{{STATIC_URL}}js/base.js"></script> 
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
 
 </head>
-<body>
-{% csrf_token %}
-<!--<div id="container" style="height: 50%">-->
-<div id="chart" class="chart_area">	
-	<div id="regular_chart" style="height: 70%" data-chart-data = "{{ chart_data}}"></div>
  <div class="select_area">
         <div class="select1">
             <span>Queue_depth:</span>
             <select>
                 <option>128</option>
 				{% for queue_depth in queue_depth_list %}
-                    <option data-platform_id="{{ queue_depth.id }}">{{queue_depth.queue_depth}}</option>
+                    <option data-queue_depth_id="{{ queue_depth.id }}">{{queue_depth.queue_depth}}</option>
 					{% endfor %}
             </select>
         </div>
@@ -35,9 +30,9 @@ src="/static/nvme_driver/static/js/charts.js"></script>-->
         <div class="select2">
             <span>rw_method:</span>
             <select>
-				<!--<option>32_Queue_Depth</option>-->
+				<option>randrw</option>
                 {% for rw in rw_list %}
-                    <option data-rw_id="{{ rw.id }}">{{rw.rw_method}}</option>
+                    <option data-rw_id="{{rw.id }}">{{rw.rw_method}}</option>
                 {% endfor %}
             </select>
         </div>
@@ -45,8 +40,8 @@ src="/static/nvme_driver/static/js/charts.js"></script>-->
             <span>Workload_mix:</span>
             <select>
 				<!--<option>32_Queue_Depth</option>-->
-                {% for mix in workload_mix %}
-                    <option data-rw_id="{{ rw.id }}">{{mix}}</option>
+                {% for mix in workload_mix_list %}
+                    <option data-workload_mix="{{ mix.workload_mix }}">{{mix.workload_mix}}</option>
                 {% endfor %}
             </select>			
         </div>
@@ -55,7 +50,7 @@ src="/static/nvme_driver/static/js/charts.js"></script>-->
             <select>
 				<!--<option>32_Queue_Depth</option>-->
                 {% for core_mask in core_mask_list %}
-                    <option data-rw_id="{{ rw.id }}">{{core_mask}}</option>
+                    <option data-core_mask="{{ core_mask.Core_Mask }}">{{core_mask.Core_Mask}}</option>
                 {% endfor %}
             </select>			
         </div>
@@ -64,21 +59,32 @@ src="/static/nvme_driver/static/js/charts.js"></script>-->
             <select>
 				<!--<option>32_Queue_Depth</option>-->
                 {% for io_size in io_size_list %}
-                    <option data-rw_id="{{ io_size.id }}">{{io_size.io_size}}</option>
+                    <option data-rw_id="{{ io_size.io_size }}">{{io_size.io_size}}</option>
                 {% endfor %}
             </select>			
         </div>
     </div>
+<body>
+<!--<div id="container" style="height: 50%">-->
+<div id="chart" class="chart_area">	
+	<div id="regular_chart" style="height: 70%" data-chart-data = "{{ chart_data}}">
+	</div>
+<div>
+{{chart_data}}
+</div>
 <script language="JavaScript">
 
-//function show_nvme_driver_trend_chart(chart_data, div, os, platform){
-function show_nvme_driver_trend_chart(chart_data){
-	alert("**********");
+function show_nvme_driver_trend_chart(chart_data, div, rw, queue_depth){
+//function show_nvme_driver_trend_chart(chart_data){
+	//alert("**********");
     var chart_data = $("#regular_chart").data("chart-data");
     exe_array = chart_data["exe_array"],
     iops_array = chart_data["iops_array"],
     latency_array = chart_data["latency_array"],
 	time_array = chart_data["time_array"],
+	MBps_array = chart_data["MBps_array"],
+	Min_lat_array = chart_data["Min_lat_array"],
+	Max_lat_array = chart_data["Max_lat_array"],
 $(function () {	
     $('#regular_chart').highcharts({
         chart: {
@@ -154,7 +160,7 @@ legendBackgroundColor) || '#FFFFFF'
         series: [{
             name: 'IOPS',
             type: 'column',
-            yAxis: 1,
+            yAxis: 2,
             data: iops_array,//[49.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4],
             tooltip: {
                 valueSuffix: ' mm'
@@ -162,7 +168,7 @@ legendBackgroundColor) || '#FFFFFF'
         }, {
             name: 'Lat',
             type: 'spline',
-            yAxis: 2,
+           // yAxis: 2,
             data: latency_array,//[1016, 1016, 1015.9, 1015.5, 1012.3, 1009.5, 1009.6, 1010.2, 1013.1, 1016.9, 1018.2, 1016.7],
             marker: {
                 enabled: false
@@ -176,7 +182,8 @@ legendBackgroundColor) || '#FFFFFF'
             name: 'MBps',
             //type: 'spline',
             type: 'column',
-            data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6],
+           	yAxis: 1,
+            data: MBps_array,//[7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6],
             tooltip: {
                 valueSuffix: 'Mb/s'
             }
@@ -184,7 +191,7 @@ legendBackgroundColor) || '#FFFFFF'
 			{
             name: 'Min_Lat',
             type: 'spline',
-            data: [7.7, 6.0, 9.0, 12.5, 18.2, 21.5, 21.2, 24.5, 23.3, 18.3,11.9, 7.6],
+            data: Min_lat_array,//[7.7, 6.0, 9.0, 12.5, 18.2, 21.5, 21.2, 24.5, 23.3, 18.3,11.9, 7.6],
             tooltip: {
                 valueSuffix: 'ns'
             }
@@ -192,7 +199,7 @@ legendBackgroundColor) || '#FFFFFF'
 			{
             name: 'Max_lat',
             type: 'spline',
-            data: [7.9, 5.9, 4.3, 12.5, 12.2, 23.5, 21.2, 22.5, 21.3, 13.3, 18.9, 9.6],
+            data: Max_lat_array,//[7.9, 5.9, 4.3, 12.5, 12.2, 23.5, 21.2, 22.5, 21.3, 13.3, 18.9, 9.6],
             tooltip: {
                 valueSuffix: 'ns'
             }
@@ -205,37 +212,55 @@ legendBackgroundColor) || '#FFFFFF'
 }
 </script>
 <script language="JavaScript">
-alert('plan_id');
 (function () {
     var chart_data = $("#regular_chart").data("chart-data");
-    show_nvme_driver_trend_chart(chart_data);
+    //show_nvme_driver_trend_chart(chart_data);
     // chart_data is string type if it is None
-    /*if (typeof chart_data != "string") {
-		alert(plan_id);
+    if (typeof chart_data != "string") {
+		//alert(plan_id);
 	   	show_nvme_driver_trend_chart(chart_data,"regular_chart","randrw","128");
         		$(".chart_nodata").hide();
     } 
 	else {
         $(".chart_nodata").show();
 	   	//show_spdk_trend_chart(chart_data,"regular_chart","ALL","ALL");
-    }*/
+    }
     function change_chart() {
-		alert('plan_id');
-        alert("change_chart")
-        var $platform = $(".select1 select").find("option:selected"),
+		//alert('plan_id');
+        //alert("change_chart")
+        //var $platform = $(".select1 select").find("option:selected"),
+        var $queue_depth = $(".select1 select").find("option:selected"),
             $rw = $(".select2 select").find("option:selected"),
+            $workload_mix = $(".select3 select").find("option:selected"),
+            $core_mask = $(".select4 select").find("option:selected"),
+            $io_size = $(".select5 select").find("option:selected"),
             param = {},
             msg = "So sorry, show chart failed !";
 		
-        if ($platform.val() != "All") {
-            param["platform_id"] = $platform.data("platform_id");
-            alert("platform.val !=NULL")
+        //if ($platform.val() != "All") {
+        if ($queue_depth.val() != "128") {
+            //param["platform_id"] = $platform.data("platform_id");
+            param["queue_depth_id"] = $queue_depth.data("queue_depth_id");
+            alert($queue_depth.data("queue_depth_id"))
         }
 
-        if ($rw.val() != "All") {
-			alert($rw.val())
+        if ($rw.val() != "randread") {
+			//alert($rw.val())
             param["rw_id"] = $rw.data("rw_id");
-			alert($rw.data("rw_id"))
+			//alert($rw.data("rw_id"))
+        }
+
+        if ($workload_mix.val() != "ALL") {
+            param["workload_mix"] = $workload_mix.data("workload_mix");
+        }
+
+        if ($core_mask.val() != "ALL") {
+            param["core_mask"] = $core_mask.data("core_mask");
+			alert($core_mask.data("core_mask"));
+        }
+
+        if ($io_size.val() != "ALL") {
+            param["io_size"] = $io_size.data("io_size");
         }
 
         var callback = function(data) {
@@ -245,15 +270,14 @@ alert('plan_id');
             var $regular_chart = $("#regular_chart"),
                 chart_data = $regular_chart.data("chart-data"),
                 rw = $regular_chart.data("rw"),
-                platform = $regular_chart.data("platform");
-			//alert(typeof chart_data)
-			alert("typeof chart_data begain!");
+                //platform = $regular_chart.data("platform");
+                queue_depth = $regular_chart.data("queue_depth");
             if (typeof chart_data != "string") {
                // show_regular_report_chart(chart_data, "regular_chart", $os.val(), $platform.val());
                 //show_nvme_driver_trend_chart(chart_data, "regular_chart", $rw.val(), $platform.val());
-				alert('chart_data !=string');
-                show_spdk_trend_chart(chart_data, "regular_chart", $rw.val(), $platform.val());
-                show_nvme_driver_trend_chart(chart_data);
+				//alert('chart_data !=string');
+                show_nvme_driver_trend_chart(chart_data, "regular_chart",$rw.val(), $queue_depth.val());
+                //show_nvme_driver_trend_chart(chart_data);
                 $(".chart_nodata").hide();
             } else {
 
@@ -261,12 +285,12 @@ alert('plan_id');
             }
         };
 
-			alert('callback');
+			//alert('callback');
         ajax_func(param, msg, callback, false);
     }
 
     function ajax_func (param, msg, callback, is_async) {
-		alert('ajax_func');
+		//alert('ajax_func');
         $.ajax({
             type: "POST",
             data: param,
@@ -286,9 +310,12 @@ alert('plan_id');
                 }
             },
             success: function (data) {
-				alert('callback(data)');
+				//alert('callback(data)');
                 callback(data);
-            }
+            },
+			error: function(xhr){
+				alert('error'+xhr.responseText);
+			}
         });
     }
     $(".select1").find("select").on("change", change_chart);
